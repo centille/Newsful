@@ -1,25 +1,20 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Newsful",
   "description": "Newsful - Trusted and Useful",
   "version": "1.0",
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "desktopCapture"
-  ],
-  "action": {
+  "permissions": ["activeTab", "tabs", "desktopCapture", "contextMenus"],
+  "browser_action": {
     "default_title": "Newsful",
     "default_popup": "./popup.html"
   },
+  "background": {
+    "scripts": ["./background.js"]
+  },
   "content_scripts": [
     {
-      "matches": [
-        "*://*/*"
-      ],
-      "js": [
-        "./popup.js"
-      ]
+      "matches": ["*://*/*"],
+      "js": ["./popup.js"]
     }
   ]
 }

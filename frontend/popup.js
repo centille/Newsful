@@ -18,3 +18,26 @@ function printText() {
 }
 
 document.getElementById("extract").onclick = printText;
+
+
+chrome.contextMenus.onClicked.addListener(function (info, tab) {
+  if (info.menuItemId === "extractText") {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.executeScript(tabs[0].id, {
+        code: `var crap = {content: window.getSelection().toString(), url:  window.location.href};
+        console.log(crap);
+        fetch('http://localhost:8000/api/selection', {
+                  method: 'GET',
+                  body: JSON.stringify(crap),
+                  headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                  },
+                })
+                .then(response => response.json())
+                .then(json => console.log(json))
+                .catch(error => console.error(error));`
+      });
+    });
+    console.log("Menu item clicked!");
+  }
+});
