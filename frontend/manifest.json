@@ -1,16 +1,25 @@
 {
-  "manifest_version": 2,
-  "name": "Extract",
+  "manifest_version": 3,
+  "name": "Newsful",
+  "description": "Newsful - Trusted and Useful",
   "version": "1.0",
-  "description": "Extract text",
-  "permissions": ["activeTab", "tabs", "desktopCapture"],
-  "browser_action": {
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "desktopCapture"
+  ],
+  "action": {
+    "default_title": "Newsful",
     "default_popup": "./popup.html"
   },
   "content_scripts": [
     {
-      "matches": ["*://*/*"],
-      "js": ["./popup.js"]
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "./popup.js"
+      ]
     }
   ]
 }
