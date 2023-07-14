@@ -1,19 +1,33 @@
-def url_is_present(conn, url: str) -> bool:
+from core.preprocessors import isCredible, isPhishing
+from core.utils import archiveURL
+from schemas import FactCheckData
+
+
+def add_to_db(conn, data: FactCheckData) -> None:
     """
-    url_is_present checks if the URL is present in the db
+    add_to_db adds the data to the database.
 
     Parameters
     ----------
-    conn : _type_
-        The Connection variable
-    url : str
-        the url
-
-    Returns
-    -------
-    bool
-        _description_
+    conn : sqlalchemy._engine.Connection
+        The connection to the database.
+    data : FactCheckData
+        The data to be added to the database.
     """
 
-    conn.execute("SELECT * FROM articles WHERE url = %s", (url,))
-    return bool(conn.fetchone())
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS articles (url TEXT, response TEXT, confidence REAL, isPhishing BOOLEAN, isCredible BOOLEAN, archive TEXT, lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+    )
+    conn.execute(
+        "INSERT INTO articles(url, content, response, confidence, isPhishing, isCredible, archive) VALUES(%s, %s, %s, %s, %s, %s)",
+        (
+            data.url,
+            data.summary,
+            data.response,
+            data.confidence,
+            isPhishing(data.url),
+            isCredible(data.url),
+            archiveURL(data.url),
+        ),
+    )
+    conn.commit()
