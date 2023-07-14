@@ -1,0 +1,8 @@
+bert-extractive-summarizer==0.10.1
+googletrans==4.0.0rc1
+fastapi==0.100.0
+mysql-connector-python==8.0.33
+pandas==2.0.3
+pyarrow==12.0.1
+waybackpy==3.0.6
+SQLAlchemy==2.0.18

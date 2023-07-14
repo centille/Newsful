@@ -1,10 +1,10 @@
 import os
 
+import mysql.connector as sql
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import mysql.connector as sql
 
-from core import summarize, to_english, fact_checker
+from core import fact_checker, summarize, to_english
 from schemas import Data
 
 app = FastAPI(
@@ -39,11 +39,13 @@ conn = sql.connect(
 
 @app.get("/api/health")
 def health():
+    """Health check endpoint."""
     return {"status": "ok"}
 
 
 @app.get("/api/verify")
-async def give_this_crap_function_a_name(data: Data):
+def give_this_crap_function_a_name(data: Data):
+    """Endpoint to verify a news article."""
     data.content = to_english(data.content)
     summary = summarize(data.content)
     new_data = Data(content=summary, title=data.title)
@@ -53,4 +55,5 @@ async def give_this_crap_function_a_name(data: Data):
 
 @app.get("/api/summarize")
 def summarize_text(text: str):
+    """Endpoint to summarize a news article."""
     return {"summary": summarize(text)}

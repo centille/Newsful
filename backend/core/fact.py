@@ -21,9 +21,7 @@ def fact_checker(conn, data: Data) -> FactCheckData:
     url = data.url
     summary = data.content
 
-    conn.execute(
-        "SELECT * FROM articles WHERE url = %s and content = %s", (url, summary)
-    )
+    conn.execute("SELECT * FROM articles WHERE url = %s and content = %s", (url, summary))
     res = conn.fetchone()
     if bool(res):
         return FactCheckData(
