@@ -2,7 +2,7 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine
+import mysql.connector as sql
 
 from core import summarize, to_english, fact_checker
 from schemas import Data
@@ -25,8 +25,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-engine = create_engine(os.environ["DATABASE_URL"])
-conn = engine.connect()
+username = os.environ.get("USERNAME")
+password = os.environ.get("PASSWORD")
+host = os.environ.get("HOST")
+dbname = os.environ.get("DATABASE")
+conn = sql.connect(
+    host=host,
+    user=username,
+    passwd=password,
+    db=dbname,
+)
 
 
 @app.get("/api/health")

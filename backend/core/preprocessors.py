@@ -1,7 +1,6 @@
 import pickle
 
 import pandas as pd
-
 from core.utils import get_domain
 
 

@@ -16,10 +16,34 @@ def add_to_db(conn, data: FactCheckData) -> None:
     """
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS articles (url TEXT, response TEXT, confidence REAL, isPhishing BOOLEAN, isCredible BOOLEAN, archive TEXT, lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+        """
+        CREATE TABLE IF NOT EXISTS articles (
+            url TEXT NOT NULL,
+            content MEDIUMTEXT NOT NULL,
+            response MEDIUMTEXT NOT NULL,
+            confidence FLOAT NOT NULL,
+            isPhishing BOOL NOT NULL,
+            isCredible BOOL NOT NULL,
+            archive TEXT NOT NULL,
+            lastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+        )
+        """
     )
     conn.execute(
-        "INSERT INTO articles(url, content, response, confidence, isPhishing, isCredible, archive) VALUES(%s, %s, %s, %s, %s, %s)",
+        """
+        INSERT INTO
+        articles (
+            url,
+            content,
+            response,
+            confidence,
+            isPhishing,
+            isCredible,
+            archive
+        )
+        VALUES
+            (%s, %s, %s, %s, %s, %s, %s)
+        """,
         (
             data.url,
             data.summary,
