@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
 class FactCheckData(BaseModel):
-    url: str
+    url: HttpUrl
     summary: str
     response: str
     confidence: float
