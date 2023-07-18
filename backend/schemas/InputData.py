@@ -1,6 +1,6 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, AnyHttpUrl
 
 
 class InputData(BaseModel):
-    url: HttpUrl
+    url: AnyHttpUrl
     content: str

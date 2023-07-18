@@ -1,11 +1,11 @@
-from typing import List, Literal
-from pydantic import BaseModel, HttpUrl
+from typing import List, Literal, Optional
+from pydantic import BaseModel, AnyHttpUrl
 
 
 class Article(BaseModel):
     __tablename__ = "articles"
 
-    url: HttpUrl
+    url: AnyHttpUrl
     content: str
     response: str
     label: Literal["Fake", "True"] = "Fake"
@@ -13,4 +13,4 @@ class Article(BaseModel):
     isPhishing: bool = False
     isCredible: bool = False
     archive: str
-    references: List[HttpUrl]
+    references: Optional[List[AnyHttpUrl]] = []
