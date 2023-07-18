@@ -1,17 +1,35 @@
 import pickle
+from urllib.parse import urlparse
 
 import pandas as pd
+from pydantic import AnyHttpUrl
 
-from core.utils import get_domain
+
+def get_domain(url: AnyHttpUrl) -> str:
+    """
+    get_domain returns the domain of the url.
+
+    Parameters
+    ----------
+    url : AnyHttpUrl
+        The url to be checked.
+
+    Returns
+    -------
+    str
+        The domain of the url.
+    """
+
+    return urlparse(str(url)).netloc
 
 
-def isPhishing(url: str) -> bool:
+def isPhishing(url: AnyHttpUrl) -> bool:
     """
     isPhishing checks if the url is a phishing url.
 
     Parameters
     ----------
-    url : str
+    url : AnyHttpUrl
         The url to be checked.
 
     Returns
@@ -25,13 +43,13 @@ def isPhishing(url: str) -> bool:
     return prediction[0] == "good"
 
 
-def isCredible(url: str) -> str:
+def isCredible(url: AnyHttpUrl) -> bool:
     """
     isCredible checks if the url is a credible url.
 
     Parameters
     ----------
-    url : str
+    url : AnyHttpUrl
         The url to be checked.
 
     Returns
@@ -41,14 +59,12 @@ def isCredible(url: str) -> str:
     """
 
     domain = get_domain(url)
-    df = pd.read_csv("assets/sources.csv", engine="pyarrow")
+    df: pd.DataFrame = pd.read_csv("assets/sources.csv", engine="pyarrow")[["domain"]]
     row = df.loc[df["domain"] == domain]
     if row.empty:
         return isPhishing(url)
-    return not any(
-        [
-            row["type1"].values[0] == "fake",
-            row["type2"].values[0] == "fake",
-            row["type3"].values[0] == "fake",
-        ]
-    )
+    return "fake" not in [
+        str(row["type1"]).lower(),
+        str(row["type2"]).lower(),
+        str(row["type3"]).lower(),
+    ]

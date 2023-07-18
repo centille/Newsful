@@ -1,7 +1,9 @@
 import re
 
+from pydantic import AnyHttpUrl
 
-def clean_text(text: str) -> str:
+
+def clean_text(text: AnyHttpUrl) -> str:
     """
     clean_text cleans the text by removing extra spaces and newlines.
 
@@ -16,6 +18,7 @@ def clean_text(text: str) -> str:
         The cleaned text.
     """
 
-    text = re.sub(r"\n", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+    crap = str(text)
+    crap = re.sub(r"\n", " ", crap)
+    crap = re.sub(r"\s+", " ", crap)
+    return crap.strip()

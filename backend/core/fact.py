@@ -1,8 +1,8 @@
 from core.db import add_to_db
-from schemas import Data, FactCheckData
+from schemas import FactCheckData, InputData
 
 
-def fact_checker(conn, data: Data) -> FactCheckData:
+def fact_checker(collection, data: InputData) -> FactCheckData:
     """
     fact_checker checks the data against the database.
 
@@ -21,8 +21,7 @@ def fact_checker(conn, data: Data) -> FactCheckData:
     url = data.url
     summary = data.content
 
-    conn.execute("SELECT * FROM articles WHERE url = %s and content = %s", (url, summary))
-    res = conn.fetchone()
+    res = collection.find_one({"url": url, "summary": summary})
     if bool(res):
         return FactCheckData(
             url=url,
@@ -38,6 +37,6 @@ def fact_checker(conn, data: Data) -> FactCheckData:
         confidence=0.0,
     )
 
-    add_to_db(conn, result)
+    add_to_db(collection, result)
 
     return result

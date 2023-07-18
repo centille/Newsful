@@ -1,31 +1,9 @@
-from urllib.parse import urlparse
-
 from googletrans import Translator
+from pydantic import AnyHttpUrl
 from summarizer import Summarizer
 from waybackpy import WaybackMachineSaveAPI
 
-# from core.decorators import clean_text
 
-
-def get_domain(url: str) -> str:
-    """
-    get_domain returns the domain of the url.
-
-    Parameters
-    ----------
-    url : str
-        The url to be checked.
-
-    Returns
-    -------
-    str
-        The domain of the url.
-    """
-
-    return urlparse(url).netloc
-
-
-# @clean_text
 def to_english(text: str) -> str:
     """
     to_english translates text to english if it is not already in english.
@@ -48,7 +26,6 @@ def to_english(text: str) -> str:
     return obj.text
 
 
-# @clean_text
 def summarize(text: str) -> str:
     """
     summarize summarizes text.
@@ -65,11 +42,11 @@ def summarize(text: str) -> str:
     """
 
     model = Summarizer()
-    summary = model(text, num_sentences=3)
+    summary = model(text, ratio=0.25, use_first=False)
     return summary
 
 
-def archiveURL(url: str) -> str:
+def archiveURL(url: AnyHttpUrl) -> str:
     """
     archiveURL returns the archive url of given url
 
@@ -84,6 +61,11 @@ def archiveURL(url: str) -> str:
         The archive url of the given url.
     """
 
-    user_agent = "Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0"
-    save_api = WaybackMachineSaveAPI(url, user_agent)
-    return save_api.save()
+    user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
+    save_api = WaybackMachineSaveAPI(
+        url=str(url),
+        user_agent=user_agent,
+        max_tries=12,
+    )
+    archive_url = save_api.save()
+    return archive_url
