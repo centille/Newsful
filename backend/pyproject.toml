@@ -13,9 +13,9 @@ pandas = "^2.0.3"
 pyarrow = "^12.0.1"
 bert-extractive-summarizer = "^0.10.1"
 googletrans = "4.0.0rc1"
-mysql-connector-python = "^8.0.33"
-SQLAlchemy = "^2.0.1"
-
+torch = "^2.0.1"
+nltk = "^3.8.1"
+pymongo = "^4.4.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
@@ -31,6 +31,10 @@ line_length = 120
 skip_glob = ["env/*"]
 extend_skip = [".md", ".lock", ".toml", ".csv", ".pkl"]
 
+[tool.mypy]
+python_version = 3.10
+disallow_untyped_defs = true
+exclude = "venv/"
 
 [build-system]
 requires = ["poetry-core"]

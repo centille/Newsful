@@ -1,11 +1,11 @@
 import os
 
-import mysql.connector as sql
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pymongo.mongo_client import MongoClient
 
 from core import fact_checker, summarize, to_english
-from schemas import Data
+from schemas import InputData
 
 app = FastAPI(
     title="Newsful API",
@@ -15,7 +15,6 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     swagger_ui_oauth2_redirect_url="api/docs/oauth2-redirect",
-    deprecated=False,
 )
 
 app.add_middleware(
@@ -25,35 +24,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-username = os.environ.get("USERNAME")
-password = os.environ.get("PASSWORD")
-host = os.environ.get("HOST")
-dbname = os.environ.get("DATABASE")
-conn = sql.connect(
-    host=host,
-    user=username,
-    passwd=password,
-    db=dbname,
-)
+uri = str(os.environ.get("URI"))
+client = MongoClient(uri)
+db = client["newsful"]
+collection = db["articles"]
 
 
 @app.get("/api/health")
 def health():
     """Health check endpoint."""
-    return {"status": "ok"}
+
+    db_is_working = False
+    try:
+        client.admin.command("ping")
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+        db_is_working = True
+    except Exception as e:
+        print(e)
+
+    return {"status": "ok", "database": db_is_working, "status_code": 200}
 
 
 @app.get("/api/verify")
-def give_this_crap_function_a_name(data: Data):
+def give_this_crap_function_a_name(data: InputData):
     """Endpoint to verify a news article."""
+
     data.content = to_english(data.content)
     summary = summarize(data.content)
-    new_data = Data(content=summary, title=data.title)
-    fact_check = fact_checker(conn, new_data)
+    new_data = InputData(url=data.url, content=summary)
+    fact_check = fact_checker(collection, new_data)
     pass
 
 
 @app.get("/api/summarize")
 def summarize_text(text: str):
     """Endpoint to summarize a news article."""
+
     return {"summary": summarize(text)}
