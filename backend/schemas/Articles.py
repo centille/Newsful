@@ -6,11 +6,11 @@ class Article(BaseModel):
     __tablename__ = "articles"
 
     url: AnyHttpUrl
-    content: str
+    summary: str
     response: str
-    label: Literal["Fake", "True"] = "Fake"
-    confidence: float
+    label: Optional[Literal["Fake", "True"]] = "Fake"
+    confidence: Optional[float] = 0.0
+    references: Optional[List[AnyHttpUrl]] = []
+    archive: str
     isPhishing: bool = False
     isCredible: bool = False
-    archive: str
-    references: Optional[List[AnyHttpUrl]] = []

@@ -4,7 +4,7 @@ from schemas import FactCheckData
 from schemas.Articles import Article
 
 
-def add_to_db(collection, data: FactCheckData) -> None:
+def add_to_db(collection, data: FactCheckData) -> Article:
     """
     add_to_db adds the data to the database.
 
@@ -18,7 +18,7 @@ def add_to_db(collection, data: FactCheckData) -> None:
 
     db_data = Article(
         url=data.url,
-        content=data.summary,
+        summary=data.summary,
         response=data.response,
         confidence=data.confidence,
         isPhishing=isPhishing(data.url),
@@ -26,3 +26,4 @@ def add_to_db(collection, data: FactCheckData) -> None:
         archive=archiveURL(data.url),
     )
     collection.insert_one(dict(db_data))
+    return db_data

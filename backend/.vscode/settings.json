@@ -1,10 +1,25 @@
 {
     "cSpell.words": [
-        "cockroachdb",
+        "dotenv",
         "fastapi",
         "googletrans",
+        "httpsredirect",
+        "KHTML",
+        "langchain",
+        "llms",
+        "MEDIUMTEXT",
         "Newsful",
+        "preprocessors",
+        "pyarrow",
+        "pydantic",
+        "pymongo",
+        "redoc",
+        "serpapi",
         "sqlalchemy",
-        "uvicorn"
+        "tfidf",
+        "TINYTEXT",
+        "vectorizer",
+        "Wayback",
+        "waybackpy"
     ]
 }
