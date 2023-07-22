@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A Fact-Checking API"
 authors = [
     "Siddhesh Agarwal <siddhesh.agarwal@gmail.com>",
-    "Rithik Raj <rithu644@gmail.com>",
+    "Rithik Raj <rithu0644@gmail.com>",
 ]
 readme = "README.md"
 
@@ -20,6 +20,11 @@ nltk = "^3.8.1"
 pymongo = "^4.4.1"
 googletrans = "4.0.0rc1"
 python-dotenv = "^1.0.0"
+langchain = "^0.0.239"
+uvicorn = "^0.23.1"
+openai = "^0.27.8"
+google-search-results = "^2.4.2"
+google-api-python-client = "^2.94.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
@@ -34,11 +39,6 @@ py_version = 310
 line_length = 120
 skip_glob = ["env/*"]
 extend_skip = [".md", ".lock", ".toml", ".csv", ".pkl"]
-
-[tool.mypy]
-python_version = 3.10
-disallow_untyped_defs = true
-exclude = "venv/"
 
 [build-system]
 requires = ["poetry-core"]

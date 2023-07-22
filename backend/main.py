@@ -13,7 +13,7 @@ from langchain.llms import OpenAI
 from langchain.utilities import GoogleSearchAPIWrapper
 from core import fact_checker, summarize, to_english
 
-from schemas import InputData
+from schemas import Article, InputData
 
 load_dotenv()
 
@@ -22,15 +22,12 @@ app = FastAPI(
     title="Newsful API",
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.0.1",
-    openapi_url="/api/openapi.json",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    swagger_ui_oauth2_redirect_url="api/docs/oauth2-redirect",
 )
 
 # FastAPI CORS
 app.add_middleware(
     CORSMiddleware,
+    allow_methods=["*"],
     allow_origins=["*"],
     allow_headers=["*"],
 )
@@ -61,7 +58,7 @@ Return answer in a json format containing "label" parameter ('true' or 'fake') t
 google_search = GoogleSearchAPIWrapper()  # type: ignore
 
 
-@app.get("/api/health")
+@app.get("/api/health/")
 def health():
     """Health check endpoint."""
 
@@ -76,8 +73,8 @@ def health():
     return {"status": "ok", "database": db_is_working, "status_code": 200}
 
 
-@app.get("/api/verify")
-def give_this_crap_function_a_name(data: InputData):
+@app.post("/api/verify/")
+def give_this_crap_function_a_name(data: InputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = to_english(data.content)
@@ -96,7 +93,7 @@ def give_this_crap_function_a_name(data: InputData):
     return fact_check
 
 
-@app.get("/api/summarize")
+@app.get("/api/summarize/")
 def summarize_text(text: str):
     """Endpoint to summarize a news article."""
 
