@@ -8,13 +8,17 @@ ___
 
 - [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)
 - [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-- [Tailwind CSS](https://tailwindcss.com/)
 
 ### Backend
 
-- [Python](https://www.python.org/)
+- [Python 3](https://www.python.org/)
 - [FastAPI](https://fastapi.tiangolo.com/)
-- [CockroachDB](https://cockroachlabs.cloud/)
+- [Google Translate](https://pypi.org/project/googletrans/)
+- [MongoDB](https://www.mongodb.com/)
+- [ChatGPT API](https://chat.openai.com/)
+- [Google Serper API](https://serper.dev)
+- [Langchain](https://www.langchain.com/)
+- [BERT Text Summarizer](https://pypi.org/project/bert-extractive-summarizer/)
 
 ___
 
