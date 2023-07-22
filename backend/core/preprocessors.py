@@ -70,3 +70,15 @@ def isCredible(url: AnyHttpUrl) -> bool:
         str(row["type2"]).lower(),
         str(row["type3"]).lower(),
     ]
+
+
+def wordopt(text: str) -> str:
+    text = text.lower()
+    text = re.sub("\[.*?\]", "", text)
+    text = re.sub("\\W", " ", text)
+    text = re.sub("https?://\S+|www\.\S+", "", text)
+    text = re.sub("<.*?>+", "", text)
+    text = re.sub("[%s]" % re.escape(string.punctuation), "", text)
+    text = re.sub("\n", "", text)
+    text = re.sub("\w*\d\w*", "", text)
+    return text

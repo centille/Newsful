@@ -15,11 +15,13 @@
         "pymongo",
         "redoc",
         "serpapi",
+        "Serper",
         "sqlalchemy",
         "tfidf",
         "TINYTEXT",
         "vectorizer",
         "Wayback",
-        "waybackpy"
+        "waybackpy",
+        "wordopt"
     ]
 }
