@@ -25,6 +25,8 @@ uvicorn = "^0.23.1"
 openai = "^0.27.8"
 google-api-python-client = "^2.94.0"
 tiktoken = "^0.4.0"
+scikit-learn = "1.1.2"
+textblob = "^0.17.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

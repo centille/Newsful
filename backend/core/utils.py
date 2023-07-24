@@ -1,6 +1,7 @@
 from googletrans import Translator
 from pydantic import AnyHttpUrl
 from summarizer import Summarizer
+from textblob import TextBlob
 from waybackpy import WaybackMachineSaveAPI
 
 
@@ -69,3 +70,7 @@ def archiveURL(url: AnyHttpUrl) -> str:
     )
     archive_url = save_api.save()
     return archive_url
+
+
+def get_polarity(text: str) -> float:
+    return TextBlob(text).polarity  # type: ignore

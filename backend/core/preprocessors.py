@@ -1,6 +1,6 @@
+import pickle
 import re
 import string
-import pickle
 from urllib.parse import urlparse
 
 import pandas as pd

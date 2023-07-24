@@ -1,19 +1,22 @@
-import os
-from pickle import load
-from typing import Any, Dict
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pymongo.mongo_client import MongoClient
 import json
+import os
+from datetime import datetime
 from io import StringIO
+from typing import Dict, List
 
 from dotenv import load_dotenv
-from langchain.agents import initialize_agent, load_tools
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from langchain import PromptTemplate
+from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain.llms import OpenAI
 from langchain.utilities import GoogleSearchAPIWrapper
-from core import fact_checker, summarize, to_english, wordopt
+from pymongo.mongo_client import MongoClient
 
-from schemas import Article, InputData
+from core import fact_checker, get_polarity, summarize, to_english
+from schemas import Article, Health, InputData
+# from pprint import pprint
+
 
 load_dotenv()
 
@@ -35,31 +38,37 @@ app.add_middleware(
 # MongoDB
 uri = str(os.environ.get("URI"))
 client = MongoClient(uri)
-db = client["newsful"]
+db = client["NewsFul"]
 collection = db["articles"]
-
-# Models
-model_filename = "pickles/PA.pickle"
-vectorizer_filename = "pickles/tfidf_vectorizer.pickle"
-vectorizer = load(open(vectorizer_filename, "rb"))
-model = load(open(model_filename, "rb"))
 
 # Langchain model
 
 load_dotenv()
 
-llm = OpenAI(max_tokens=200, temperature=0)  # type: ignore
+llm = OpenAI(max_tokens=200, temperature=0.2)  # type: ignore
 tools = load_tools(["google-serper"], llm=llm)
-agent = initialize_agent(tools=tools, llm=llm, agent="zero-shot-react-description", verbose=True)  # type: ignore
-template = """{news}. Yes or No?
+agent = initialize_agent(
+    tools=tools,
+    llm=llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True,
+)  # type: ignore
+template = PromptTemplate.from_template(
+    template="""{news}. Yes or No?
 
-Return answer in a json format containing "label" parameter ('true' or 'fake') to classify the news and "explanation" parameter.
+Return answer in json format containing "label" (bool) to classify the news and "explanation" (str) parameter. Expecting property name enclosed in double quotes.
 """
+)
 google_search = GoogleSearchAPIWrapper()  # type: ignore
 
 
+def get_top_5_google_results(query: str) -> List[Dict[str, str]]:
+    """Get top 5 google results for a query."""
+    return google_search.results(query, 5)
+
+
 @app.get("/api/health/")
-def health() -> Dict[str, Any]:
+def health() -> Health:
     """Health check endpoint."""
 
     db_is_working = False
@@ -70,8 +79,7 @@ def health() -> Dict[str, Any]:
     except Exception as e:
         print("DIE THRASH")
         print(e)
-
-    return {"status": "ok", "database": db_is_working, "status_code": 200}
+    return Health(status="ok", database=db_is_working, status_code=200)
 
 
 @app.post("/api/verify/")
@@ -83,14 +91,20 @@ def verify_news(data: InputData) -> Article:
     fact_check = fact_checker(collection, data)
 
     response = agent.run(template.format(news=data.content))
-    data_ = json.load(StringIO(response))
-    fact_check.references = [x["link"] for x in google_search_tool(data.content)]  # type: ignore
-    fact_check.response = data_["explanation"]
-    fact_check.label = data_["label"]
-
-    tfidf_x = vectorizer.transform([data.content])
-    tfidf_x = wordopt(tfidf_x)
-    fact_check.confidence = int(model._predict_proba_lr(tfidf_x)[0][1] * 100)
+    # pprint(response, width=120)
+    try:
+        data_ = json.load(StringIO(response))
+    except Exception as e:
+        data_ = {
+            "explanation": response,
+            "label": "true" if (get_polarity(response) / get_polarity(data.content)) > 0 else "fake",
+        }
+    fact_check.label = data_["label"]  # type: ignore
+    fact_check.response = data_["explanation"]  # type: ignore
+    fact_check.references = [x["link"] for x in get_top_5_google_results(data.content)]  # type: ignore
+    file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+    json.dump(dict(fact_check), open(file, "w"), indent=4)
+    # pprint(dict(fact_check), width=120)
     return fact_check
 
 
@@ -108,6 +122,6 @@ if __name__ == "__main__":
         app,
         host="localhost",
         port=8000,
-        log_level="debug",
         use_colors=True,
+        log_level="info",
     )

@@ -1,7 +1,6 @@
 from core.preprocessors import isCredible, isPhishing
 from core.utils import archiveURL
-from schemas import FactCheckData
-from schemas import Article
+from schemas import Article, FactCheckData
 
 
 def add_to_db(collection, data: FactCheckData) -> Article:
