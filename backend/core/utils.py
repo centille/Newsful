@@ -1,4 +1,4 @@
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from pydantic import AnyHttpUrl
 from summarizer import Summarizer
 from textblob import TextBlob
@@ -20,11 +20,8 @@ def to_english(text: str) -> str:
         The text translated to english.
     """
 
-    translator = Translator()
-    if translator.detect(text).lang == "en":
-        return text
-    obj = translator.translate(text)
-    return obj.text
+    translator = GoogleTranslator(source="auto", target="en")
+    return translator.translate(text)
 
 
 def summarize(text: str) -> str:
