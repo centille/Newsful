@@ -12,9 +12,11 @@ from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain.llms import OpenAI
 from langchain.utilities import GoogleSearchAPIWrapper
 from pymongo.mongo_client import MongoClient
+import uvicorn
 
-from core import fact_checker, get_polarity, summarize, to_english
+from core import fact_checker, get_polarity, summarize, to_english, add_to_db
 from schemas import Article, Health, InputData
+
 # from pprint import pprint
 
 
@@ -97,11 +99,15 @@ def verify_news(data: InputData) -> Article:
     except Exception as e:
         data_ = {
             "explanation": response,
-            "label": "true" if (get_polarity(response) / get_polarity(data.content)) > 0 else "fake",
+            "label": "true"
+            if (get_polarity(response) / get_polarity(data.content)) > 0
+            else "fake",
         }
     fact_check.label = data_["label"]  # type: ignore
     fact_check.response = data_["explanation"]  # type: ignore
-    fact_check.references = [x["link"] for x in get_top_5_google_results(data.content)]  # type: ignore
+    if len(fact_check.references) == 0:  # type: ignore
+        fact_check.references = [x["link"] for x in get_top_5_google_results(data.content)]  # type: ignore
+        add_to_db(collection, fact_check)
     file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
     json.dump(dict(fact_check), open(file, "w"), indent=4)
     # pprint(dict(fact_check), width=120)
@@ -116,12 +122,4 @@ def summarize_text(text: str):
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(
-        app,
-        host="localhost",
-        port=8000,
-        use_colors=True,
-        log_level="info",
-    )
+    uvicorn.run(app=app, host="localhost", port=8000, use_colors=True)

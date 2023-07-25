@@ -1,5 +1,4 @@
-from core.db import add_to_db
-from schemas import Article, FactCheckData, InputData
+from schemas import Article, InputData
 
 
 def fact_checker(collection, data: InputData) -> Article:
@@ -15,7 +14,7 @@ def fact_checker(collection, data: InputData) -> Article:
 
     Returns
     -------
-    FactCheckData
+    Article
         The result of the fact check.
     """
     url = data.url
@@ -25,11 +24,11 @@ def fact_checker(collection, data: InputData) -> Article:
     if res:
         return Article(**res)
 
-    result = FactCheckData(
+    result = Article(
         url=url,
         summary=summary,
         response="",
         confidence=0.0,
-    )  # type: ignore
+    )
 
-    return add_to_db(collection, result)
+    return result

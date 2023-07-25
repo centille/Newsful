@@ -6,14 +6,14 @@ class Article(BaseModel):
     __tablename__ = "articles"
 
     url: AnyHttpUrl
+    archive: Optional[str] = ""
     summary: str
     response: str
-    label: Optional[Literal["Fake", "True"]] = "Fake"
+    label: Optional[bool] = False
     confidence: Optional[float] = 0.0
     references: Optional[List[AnyHttpUrl]] = []
-    archive: str
-    isPhishing: bool = False
-    isCredible: bool = False
+    isPhishing: Optional[bool] = False
+    isCredible: Optional[bool] = False
 
     @validator("label")
     def check_label(cls, v):
@@ -38,4 +38,10 @@ class Article(BaseModel):
     def check_references(cls, v):
         if not isinstance(v, list):
             raise ValueError("References must be a list")
+        return v
+
+    @validator("archive")
+    def set_archive_to_url_if_empty(cls, v, values):
+        if v == "":
+            return values["url"]
         return v
