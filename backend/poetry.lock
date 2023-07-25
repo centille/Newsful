@@ -502,7 +502,6 @@ files = [
 
 [package.dependencies]
 beautifulsoup4 = ">=4.9.1,<5.0.0"
-openai = {version = ">=0.27.6,<0.28.0", optional = true, markers = "python_full_version >= \"3.7.1\" and python_full_version < \"4.0.0\" and extra == \"ai\""}
 requests = ">=2.23.0,<3.0.0"
 
 [package.extras]
@@ -2977,4 +2976,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "3776ff49187cf724610466032af9d29f7eadf234fe0abb45573c28b69afbbbc8"
+content-hash = "9795512e5dd0f6ca8eccaea39f5909608ee07ae55fc87f2c50bc0ff2e0c48f7a"

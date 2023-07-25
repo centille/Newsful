@@ -27,7 +27,7 @@ tiktoken = "^0.4.0"
 scikit-learn = "1.1.2"
 textblob = "^0.17.1"
 scipy = "1.10.0"
-deep-translator = {version = "^1.11.4", extras = ["ai"]}
+deep-translator = "^1.11.4"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"
