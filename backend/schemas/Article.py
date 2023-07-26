@@ -1,5 +1,6 @@
 from typing import List, Literal, Optional
-from pydantic import BaseModel, AnyHttpUrl, validator
+
+from pydantic import AnyHttpUrl, BaseModel, validator
 
 
 class Article(BaseModel):

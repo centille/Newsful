@@ -1,5 +1,4 @@
-from core.preprocessors import isCredible, isPhishing
-from core.utils import archiveURL
+from core.preprocessors import archiveURL, get_confidence, get_top_5_google_results, isCredible, isPhishing
 from schemas import Article
 
 
@@ -19,10 +18,12 @@ def add_to_db(collection, data: Article) -> Article:
         url=data.url,
         summary=data.summary,
         response=data.response,
-        confidence=data.confidence,
+        label=data.label,
+        archive=archiveURL(data.url),
+        confidence=get_confidence(data.summary),
+        references=get_top_5_google_results(data.summary),
         isPhishing=isPhishing(data.url),
         isCredible=isCredible(data.url),
-        archive=archiveURL(data.url),
     )
     collection.insert_one(dict(db_data))
     return db_data

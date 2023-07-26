@@ -1,10 +1,8 @@
-from typing import List
+from urllib.parse import urlparse
+
 from deep_translator import GoogleTranslator
-from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from summarizer import Summarizer
-from textblob import TextBlob
-from waybackpy import WaybackMachineSaveAPI
 
 
 def to_english(text: str) -> str:
@@ -22,9 +20,27 @@ def to_english(text: str) -> str:
         The text translated to english.
     """
 
-    text = text.strip().replace("\n", " ").replace("\t", " ")
     translator = GoogleTranslator(source="auto", target="en")
-    return translator.translate(text)
+    text = translator.translate(text)
+    return wordopt(text)
+
+
+def get_domain(url: AnyHttpUrl) -> str:
+    """
+    get_domain returns the domain of the url.
+
+    Parameters
+    ----------
+    url : AnyHttpUrl
+        The url to be checked.
+
+    Returns
+    -------
+    str
+        The domain of the url.
+    """
+
+    return urlparse(str(url)).netloc
 
 
 def summarize(text: str) -> str:
@@ -50,37 +66,8 @@ def summarize(text: str) -> str:
     return summary
 
 
-def archiveURL(url: AnyHttpUrl) -> str:
-    """
-    archiveURL returns the archive url of given url
-
-    Parameters
-    ----------
-    url : str
-        The url to be archived.
-
-    Returns
-    -------
-    str
-        The archive url of the given url.
-    """
-
-    user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
-    save_api = WaybackMachineSaveAPI(
-        url=str(url),
-        user_agent=user_agent,
-        max_tries=12,
-    )
-    archive_url = save_api.save()
-    return archive_url
-
-
-def get_polarity(text: str) -> float:
-    return TextBlob(text).polarity  # type: ignore
-
-
-def get_top_5_google_results(query: str) -> List[AnyHttpUrl]:
-    """Get top 5 google results for a query."""
-    google_search = GoogleSearchAPIWrapper(search_engine="google")
-    results = google_search.results(query, 5)
-    return [result["link"] for result in results]
+def wordopt(text: str) -> str:
+    text = text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ")
+    if text.endswith("."):
+        text = text[:-1]
+    return text

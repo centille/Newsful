@@ -7,8 +7,8 @@ def fact_checker(collection, data: InputData) -> Article:
 
     Parameters
     ----------
-    conn : sqlalchemy._engine.Connection
-        The connection to the database.
+    conn : mongoDB Collection
+        The MongoDB Collection to be used.
     data : Data
         The data to be checked.
 
@@ -28,7 +28,6 @@ def fact_checker(collection, data: InputData) -> Article:
         url=url,
         summary=summary,
         response="",
-        confidence=0.0,
     )
 
     return result

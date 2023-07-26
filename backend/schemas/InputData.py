@@ -1,4 +1,4 @@
-from pydantic import BaseModel, AnyHttpUrl, validator
+from pydantic import AnyHttpUrl, BaseModel, validator
 
 
 class InputData(BaseModel):

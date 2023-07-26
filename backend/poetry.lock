@@ -2449,20 +2449,6 @@ files = [
 doc = ["reno", "sphinx", "tornado (>=4.5)"]
 
 [[package]]
-name = "textblob"
-version = "0.17.1"
-description = "Simple, Pythonic text processing. Sentiment analysis, part-of-speech tagging, noun phrase parsing, and more."
-optional = false
-python-versions = "*"
-files = [
-    {file = "textblob-0.17.1-py2.py3-none-any.whl", hash = "sha256:15546d7f309e96a3f542bee42751c8e5ce4d519d3d274ee79df2318141f0b788"},
-    {file = "textblob-0.17.1.tar.gz", hash = "sha256:8dc0875dfab1eaf0dc772a9dbc4afaa9ca93d0e35cd62cb792f3a38e067ab68f"},
-]
-
-[package.dependencies]
-nltk = {version = ">=3.1", markers = "python_version >= \"3\""}
-
-[[package]]
 name = "thinc"
 version = "7.4.6"
 description = "Practical Machine Learning for NLP"
@@ -2976,4 +2962,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "9795512e5dd0f6ca8eccaea39f5909608ee07ae55fc87f2c50bc0ff2e0c48f7a"
+content-hash = "978ee47e80f4e94a0e8ded769728f9235369804f1551f06a8d283650e0e86c76"
