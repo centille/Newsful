@@ -48,20 +48,25 @@ collection = db["articles"]
 
 load_dotenv()
 
-llm = OpenAI(max_tokens=200, temperature=0.2)  # type: ignore
+llm = OpenAI(
+    max_tokens=200,
+    temperature=0,
+    client=None,
+    model="text-davinci-003",
+    frequency_penalty=1,
+    presence_penalty=0,
+    top_p=1,
+)
 tools = load_tools(["google-serper"], llm=llm)
 agent = initialize_agent(
     tools=tools,
     llm=llm,
     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
-)  # type: ignore
-template = PromptTemplate.from_template(
-    template="""{news}. Yes or No?
-
-Return answer in json format containing "label" (bool) to classify the news and "explanation" (str) parameter. Expecting property name enclosed in double quotes.
-"""
 )
+template = """ True or False?
+    Without any comment, return the result in the following JSON format {"label": bool, "explanation": str}
+"""
 
 
 @app.get("/api/health/")
@@ -87,16 +92,14 @@ def verify_news(data: InputData) -> Article:
     data.content = summarize(data.content)
     fact_check = fact_checker(collection, data)
 
-    response = agent.run(template.format(news=data.content))
+    response = agent.run(data.content + template)
     # pprint(response, width=120)
     try:
         data_ = json.load(StringIO(response))
     except Exception as e:
-        data_ = {
-            "explanation": response,
-            "label": (get_polarity(response) / get_polarity(data.content)) > 0,
-        }
-        print("Exception: ", e)
+        print("API response is not valid JSON.")
+        print(e)
+        exit()
     fact_check.label = data_["label"]
     fact_check.response = data_["explanation"]
     if fact_check.references is not None and len(fact_check.references) == 0:
