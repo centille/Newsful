@@ -15,6 +15,7 @@ from pymongo.mongo_client import MongoClient
 import uvicorn
 
 from core import fact_checker, get_polarity, summarize, to_english, add_to_db
+from core.utils import get_top_5_google_results
 from schemas import Article, Health, InputData
 
 # from pprint import pprint
@@ -61,12 +62,6 @@ template = PromptTemplate.from_template(
 Return answer in json format containing "label" (bool) to classify the news and "explanation" (str) parameter. Expecting property name enclosed in double quotes.
 """
 )
-google_search = GoogleSearchAPIWrapper()  # type: ignore
-
-
-def get_top_5_google_results(query: str) -> List[Dict[str, str]]:
-    """Get top 5 google results for a query."""
-    return google_search.results(query, 5)
 
 
 @app.get("/api/health/")
@@ -79,8 +74,8 @@ def health() -> Health:
         print("Pinged your deployment. You successfully connected to MongoDB!")
         db_is_working = True
     except Exception as e:
-        print("DIE THRASH")
-        print(e)
+        print("Unable to connect to the database.")
+        exit()
     return Health(status="ok", database=db_is_working, status_code=200)
 
 
@@ -99,14 +94,13 @@ def verify_news(data: InputData) -> Article:
     except Exception as e:
         data_ = {
             "explanation": response,
-            "label": "true"
-            if (get_polarity(response) / get_polarity(data.content)) > 0
-            else "fake",
+            "label": (get_polarity(response) / get_polarity(data.content)) > 0,
         }
-    fact_check.label = data_["label"]  # type: ignore
-    fact_check.response = data_["explanation"]  # type: ignore
-    if len(fact_check.references) == 0:  # type: ignore
-        fact_check.references = [x["link"] for x in get_top_5_google_results(data.content)]  # type: ignore
+        print("Exception: ", e)
+    fact_check.label = data_["label"]
+    fact_check.response = data_["explanation"]
+    if fact_check.references is not None and len(fact_check.references) == 0:
+        fact_check.references = get_top_5_google_results(data.content)
         add_to_db(collection, fact_check)
     file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
     json.dump(dict(fact_check), open(file, "w"), indent=4)
@@ -121,5 +115,5 @@ def summarize_text(text: str):
     return {"summary": summarize(text)}
 
 
-if __name__ == "__main__":
-    uvicorn.run(app=app, host="localhost", port=8000, use_colors=True)
+# if __name__ == "__main__":
+#     uvicorn.run(app=app, host="localhost", port=8000, use_colors=True)

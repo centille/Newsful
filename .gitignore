@@ -155,3 +155,4 @@ cython_debug/
 # VSCode project settings
 .vscode/
 factcheck/
+output/

@@ -17,8 +17,8 @@ class Article(BaseModel):
 
     @validator("label")
     def check_label(cls, v):
-        if v not in ["Fake", "True"]:
-            raise ValueError("Label must be either 'Fake' or 'True'")
+        if not isinstance(v, bool):
+            raise ValueError("Label must be a boolean.")
         return v
 
     @validator("confidence")

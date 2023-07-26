@@ -1,4 +1,6 @@
+from typing import List
 from deep_translator import GoogleTranslator
+from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from summarizer import Summarizer
 from textblob import TextBlob
@@ -20,6 +22,7 @@ def to_english(text: str) -> str:
         The text translated to english.
     """
 
+    text = text.strip().replace("\n", " ").replace("\t", " ")
     translator = GoogleTranslator(source="auto", target="en")
     return translator.translate(text)
 
@@ -40,7 +43,10 @@ def summarize(text: str) -> str:
     """
 
     model = Summarizer()
-    summary = model(text, ratio=0.25, use_first=False)
+    if len(text) < 1000:
+        summary = model(text, num_sentences=4, algorithm="gmm")
+    else:
+        summary = model(text, ratio=0.25, algorithm="gmm")
     return summary
 
 
@@ -71,3 +77,10 @@ def archiveURL(url: AnyHttpUrl) -> str:
 
 def get_polarity(text: str) -> float:
     return TextBlob(text).polarity  # type: ignore
+
+
+def get_top_5_google_results(query: str) -> List[AnyHttpUrl]:
+    """Get top 5 google results for a query."""
+    google_search = GoogleSearchAPIWrapper(search_engine="google")
+    results = google_search.results(query, 5)
+    return [result["link"] for result in results]
