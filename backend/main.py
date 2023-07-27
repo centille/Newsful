@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from io import StringIO
 from pprint import pprint
-from typing import Dict, List
+import warnings
 
 import uvicorn
 from dotenv import load_dotenv
@@ -33,6 +33,9 @@ app.add_middleware(
     allow_origins=["*"],
     allow_headers=["*"],
 )
+
+# suppress warnings
+warnings.filterwarnings("ignore")
 
 # MongoDB
 uri = str(os.environ.get("URI"))
