@@ -84,7 +84,7 @@ def health() -> Health:
 
 
 @app.post("/api/verify/")
-def verify_news(data: InputData) -> Article:
+async def verify_news(data: InputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
