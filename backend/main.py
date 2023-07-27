@@ -105,7 +105,7 @@ async def verify_news(data: InputData) -> Article:
     fact_check.label = data_["label"]
     fact_check.response = data_["explanation"]
 
-    fact_check = add_to_db(collection, fact_check)
+    fact_check = await add_to_db(collection, fact_check)
 
     if DEBUG:
         file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
