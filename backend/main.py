@@ -1,11 +1,10 @@
 import json
 import os
+import warnings
 from datetime import datetime
 from io import StringIO
 from pprint import pprint
-import warnings
 
-import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -132,4 +131,5 @@ def image_check(url: str):
 
 
 # if __name__ == "__main__":
+#     import uvicorn
 #     uvicorn.run(app=app, host="localhost", port=8000, use_colors=True)
