@@ -59,6 +59,8 @@ def summarize(text: str) -> str:
     """
 
     model = Summarizer()
+    if len(text) < 250 or len(text.split()) < 50:
+        return text
     if len(text) < 1000:
         summary = model(text, num_sentences=4, algorithm="gmm")
     else:
@@ -68,6 +70,4 @@ def summarize(text: str) -> str:
 
 def wordopt(text: str) -> str:
     text = text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ")
-    if text.endswith("."):
-        text = text[:-1]
-    return text
+    return text.rstrip(".")

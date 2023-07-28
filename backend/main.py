@@ -90,27 +90,32 @@ async def verify_news(data: InputData) -> Article:
     data.content = summarize(to_english(data.content))
     fact_check = fact_checker(collection, data)
     if fact_check.references is not None and len(fact_check.references) == 5:
+        if DEBUG:
+            pprint(dict(fact_check), width=120)
         return fact_check
 
-    response = agent.run(data.content.lstrip(".") + template)
+    response = agent.run(data.content + template)
     # pprint(response, width=120)
     if "{" in response and "}" in response:
         l = response.find("{")
         r = response.find("}", l)
         response = response[l : r + 1]
         data_ = json.load(StringIO(response))
+        if DEBUG:
+            pprint(data_, width=120)
     else:
-        print("API response does not contain valid JSON.")
+        pprint("API response does not contain valid JSON.", width=120)
         raise Exception("API response does not contain valid JSON.")
     fact_check.label = data_["label"]
     fact_check.response = data_["explanation"]
 
-    fact_check = await add_to_db(collection, fact_check)
+    fact_check = add_to_db(collection, fact_check)
 
     if DEBUG:
         file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
-        json.dump(dict(fact_check), open(file, "w"), indent=4)
-        pprint(dict(fact_check), width=120)
+        fact_check_dict = dict(fact_check)
+        json.dump(fact_check_dict, open(file, "w"), indent=4)
+        pprint(fact_check_dict, width=120)
 
     return fact_check
 

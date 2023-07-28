@@ -2,7 +2,7 @@ from core.preprocessors import archiveURL, get_confidence, get_top_5_google_resu
 from schemas import Article
 
 
-async def add_to_db(collection, data: Article) -> Article:
+def add_to_db(collection, data: Article) -> Article:
     """
     add_to_db adds the data to the database.
 
