@@ -12,7 +12,7 @@ from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain.llms import OpenAI
 from pymongo.mongo_client import MongoClient
 
-from core import add_to_db, fact_checker, summarize, to_english
+from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
 from schemas import Article, Health, InputData
 
 load_dotenv()
@@ -60,7 +60,7 @@ agent = initialize_agent(
     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
     verbose=True,
 )
-template = """. True or False?
+template = """. Is this news true or false?
     Without any comment, return the result in the following JSON format {"label": bool, "explanation": str}
 """
 
@@ -88,17 +88,17 @@ async def verify_news(data: InputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
-    fact_check = fact_checker(collection, data)
-    if fact_check.references is not None and len(fact_check.references) == 5:
+    fact_check, exists = fetch_from_db_if_exists(collection, data)
+    if exists:
         if DEBUG:
             pprint(dict(fact_check), width=120)
         return fact_check
 
     response = agent.run(data.content + template)
     # pprint(response, width=120)
-    if "{" in response and "}" in response:
-        l = response.find("{")
-        r = response.find("}", l)
+    l = response.find("{")
+    r = response.find("}", l) if l != -1 else -1
+    if l != -1 and r != -1:
         response = response[l : r + 1]
         data_ = json.load(StringIO(response))
         if DEBUG:
@@ -129,7 +129,7 @@ def summarize_text(text: str):
     return {"summary": summary}
 
 
-@app.get("/api/image-check/")
+@app.get("/api/verify/image")
 def image_check(url: str):
     """Endpoint to check if an image is fake."""
     raise NotImplementedError("This endpoint is not implemented yet.")
