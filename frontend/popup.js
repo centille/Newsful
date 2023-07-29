@@ -1,23 +1,23 @@
-function printText() {
-  console.log("test");
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    console.log("test");
-    chrome.tabs.executeScript(tabs[0].id, {
-      code: `var crap = {content: document.body.innerText, url: window.location.href};
-      fetch('http://localhost:8000/test', {
-          method: 'GET',
-          body: JSON.stringify(crap),
-          headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-          },
-        })
-        .then(response => response.json())
-        .catch(error => console.error(error))`
-    });
-  });
-}
+// function printText() {
+//   console.log("test");
+//   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//     console.log("test");
+//     chrome.tabs.executeScript(tabs[0].id, {
+//       code: `var crap = {content: document.body.innerText, url: window.location.href};
+//       fetch('http://localhost:8000/test', {
+//           method: 'GET',
+//           body: JSON.stringify(crap),
+//           headers: {
+//             'Content-type': 'application/json; charset=UTF-8',
+//           },
+//         })
+//         .then(response => response.json())
+//         .catch(error => console.error(error))`
+//     });
+//   });
+// }
 
-document.getElementById("extract").onclick = printText;
+// document.getElementById("extract").onclick = printText;
 
 
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
@@ -26,15 +26,17 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
       chrome.tabs.executeScript(tabs[0].id, {
         code: `var crap = {content: window.getSelection().toString(), url:  window.location.href};
         console.log(crap);
-        fetch('http://localhost:8000/api/selection', {
-                  method: 'GET',
+        var result;
+        fetch('http://localhost:8000/api/verify', {
+                  method: 'POST',
                   body: JSON.stringify(crap),
                   headers: {
                     'Content-type': 'application/json; charset=UTF-8',
                   },
                 })
                 .then(response => response.json())
-                .then(json => console.log(json))
+                .then(json => {console.log(json); result = json;})
+                .then(() => {console.log(result); alert(result.label);})
                 .catch(error => console.error(error));`
       });
     });
