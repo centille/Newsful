@@ -1,16 +1,18 @@
 from typing import Tuple
 
+from pymongo import MongoClient
+
 from schemas import Article, InputData
 
 
-def fetch_from_db_if_exists(collection, data: InputData) -> Tuple[Article, bool]:
+def fetch_from_db_if_exists(uri: str, data: InputData) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
 
     Parameters
     ----------
-    conn : mongoDB Collection
-        The MongoDB Collection to be used.
+    uri : str
+        The MongoDB connection string to be used.
     data : InputData
         The data to be checked.
 
@@ -24,7 +26,16 @@ def fetch_from_db_if_exists(collection, data: InputData) -> Tuple[Article, bool]
     url = data.url
     summary = data.content
 
+    # check if connection is working
+    client = MongoClient(uri)
+    collection = client["NewsFul"]["articles"]
+    if client.admin.command("ping")["ok"] != 1:
+        raise Exception("No connection to database")
+
+    # fetch from database if exists
     res = collection.find_one({"url": url, "summary": summary})
+    client.close()
+
     if res:
         return Article(**res), True
 

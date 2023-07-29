@@ -15,8 +15,6 @@ from pymongo.mongo_client import MongoClient
 from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
 from schemas import Article, Health, InputData
 
-load_dotenv()
-
 
 # FastAPI app
 app = FastAPI(
@@ -33,17 +31,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# suppress warnings
-warnings.filterwarnings("ignore")
-
-# MongoDB
-uri = str(os.environ.get("URI"))
-client = MongoClient(uri)
-collection = client["NewsFul"]["articles"]
-
+# Load environment variables
 load_dotenv()
+URI = str(os.environ.get("URI"))
+# Suppress warnings
+warnings.filterwarnings("ignore")
+# Global variables
 DEBUG = True
 
+# Initialize agent
 llm = OpenAI(
     max_tokens=200,
     temperature=0,
@@ -70,17 +66,14 @@ def health() -> Health:
     """Health check endpoint."""
 
     db_is_working = False
-    try:
-        client.admin.command("ping")
+    client = MongoClient(URI)
+    if client.admin.command("ping")["ok"] == 1:
+        client.close()
         if DEBUG:
             print("Pinged your deployment. You successfully connected to MongoDB!")
         db_is_working = True
-    except Exception as e:
-        print(f"Unable to connect to the database.")
-        print("Error:", e)
-        print("Time of exception:", datetime.now())
-        raise Exception("Unable to connect to the database.")
-    return Health(status="ok", database=db_is_working, status_code=200)
+        return Health(status="ok", database=db_is_working, status_code=200)
+    raise Exception("Unable to connect to the database.")
 
 
 @app.post("/api/verify/")
@@ -88,7 +81,7 @@ async def verify_news(data: InputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
-    fact_check, exists = fetch_from_db_if_exists(collection, data)
+    fact_check, exists = fetch_from_db_if_exists(URI, data)
     if exists:
         if DEBUG:
             pprint(dict(fact_check), width=120)
@@ -109,7 +102,7 @@ async def verify_news(data: InputData) -> Article:
     fact_check.label = data_["label"]
     fact_check.response = data_["explanation"]
 
-    fact_check = add_to_db(collection, fact_check)
+    fact_check = add_to_db(URI, fact_check)
 
     if DEBUG:
         file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
