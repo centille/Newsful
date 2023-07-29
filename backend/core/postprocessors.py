@@ -57,8 +57,8 @@ def is_credible(url: AnyHttpUrl) -> bool:
 
     domain = get_domain(url)
     domain_without_subdomain = ".".join(domain.split(".")[-2:])
-    try:
-        req = requests.get(f"https://who.is/whois/{domain_without_subdomain}")
+    req = requests.get(f"https://who.is/whois/{domain_without_subdomain}")
+    if req.status_code == 200:
         soup = BeautifulSoup(req.text, "html.parser")
         registry_data = soup.find_all("div", {"class": "row queryResponseBodyRow"})
         if registry_data is not None:
@@ -69,8 +69,6 @@ def is_credible(url: AnyHttpUrl) -> bool:
                     # if domain is registered in past 500 days, it is not credible
                     if (datetime.now() - date).days < 500:
                         return False
-    except Exception:
-        pass
 
     safe_tlds = [".com", ".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
@@ -121,13 +119,13 @@ def archiveURL(url: AnyHttpUrl) -> str:
         The archive url of the given url. If the url is not archived, the original url is returned.
     """
 
+    user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
+    save_api = WaybackMachineSaveAPI(
+        url=str(url),
+        user_agent=user_agent,
+        max_tries=12,
+    )
     try:
-        user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
-        save_api = WaybackMachineSaveAPI(
-            url=str(url),
-            user_agent=user_agent,
-            max_tries=12,
-        )
         archive_url = save_api.save()
         return archive_url
     except Exception:

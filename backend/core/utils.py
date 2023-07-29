@@ -1,4 +1,8 @@
+from urllib.parse import urlparse
+
+from deep_translator import GoogleTranslator
 from pydantic import AnyHttpUrl
+from summarizer import Summarizer
 
 
 def to_english(text: str) -> str:
@@ -15,8 +19,6 @@ def to_english(text: str) -> str:
     str
         The text translated to english.
     """
-    from deep_translator import GoogleTranslator
-
     translator = GoogleTranslator(source="auto", target="en")
     text = translator.translate(text)
     return wordopt(text)
@@ -36,8 +38,6 @@ def get_domain(url: AnyHttpUrl) -> str:
     str
         The domain of the url.
     """
-    from urllib.parse import urlparse
-
     return urlparse(str(url)).netloc
 
 
@@ -55,16 +55,12 @@ def summarize(text: str) -> str:
     str
         The summary of the text.
     """
-    from summarizer import Summarizer
-
-    model = Summarizer()
     if len(text) < 250 or len(text.split()) < 50:
         return text
+    model = Summarizer()
     if len(text) < 1000:
-        summary = model(text, num_sentences=4)
-    else:
-        summary = model(text, ratio=0.25)
-    return summary
+        return model(text, num_sentences=4, use_first=True)
+    return model(text, ratio=0.25, use_first=True)
 
 
 def wordopt(text: str) -> str:

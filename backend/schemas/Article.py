@@ -11,7 +11,7 @@ class Article(BaseModel):
     summary: str
     response: str
     label: Optional[bool] = False
-    confidence: Optional[float] = 0.0
+    confidence: Optional[int] = 0
     references: Optional[List[AnyHttpUrl]] = []
     isPhishing: Optional[bool] = False
     isCredible: Optional[bool] = False
