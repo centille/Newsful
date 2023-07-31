@@ -13,8 +13,7 @@ from langchain.llms import OpenAI
 from pymongo.mongo_client import MongoClient
 
 from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
-from schemas import Article, Health, InputData
-
+from schemas import Article, FactCheckResponse, Health, ImageInputData, TextInputData
 
 # FastAPI app
 app = FastAPI(
@@ -76,8 +75,17 @@ def health() -> Health:
     raise Exception("Unable to connect to the database.")
 
 
-@app.post("/api/verify/")
-async def verify_news(data: InputData) -> Article:
+@app.get("/api/summarize/")
+def summarize_text(text: str):
+    """Endpoint to summarize a news article."""
+    summary = summarize(text)
+    if DEBUG:
+        pprint(summary, width=120)
+    return {"summary": summary}
+
+
+@app.post("/api/verify/text/")
+async def verify_news(data: TextInputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
@@ -88,19 +96,29 @@ async def verify_news(data: InputData) -> Article:
         return fact_check
 
     response = agent.run(data.content + template)
-    # pprint(response, width=120)
+    if DEBUG:
+        print("Raw response:")
+        pprint(response, width=120)
     l = response.find("{")
     r = response.find("}", l) if l != -1 else -1
-    if l != -1 and r != -1:
-        response = response[l : r + 1]
-        data_ = json.load(StringIO(response))
-        if DEBUG:
-            pprint(data_, width=120)
-    else:
+    if l == -1 or r == -1:
         pprint("API response does not contain valid JSON.", width=120)
         raise Exception("API response does not contain valid JSON.")
-    fact_check.label = data_["label"]
-    fact_check.response = data_["response"]
+
+    # clean
+    response = response[l : r + 1].lower()
+    if response.find('"label"') == -1 and response.find("label") != -1:
+        response = response.replace("label", '"label"')
+    if response.find('"response"') == -1 and response.find("response") != -1:
+        response = response.replace("response", '"response"')
+    fact_check_resp = FactCheckResponse(**json.load(StringIO(response)))
+    if DEBUG:
+        print("Filtered Response:")
+        pprint(fact_check_resp, width=120)
+
+    # assign to right variable
+    fact_check.label = fact_check_resp.label
+    fact_check.response = fact_check_resp.response
 
     fact_check = add_to_db(URI, fact_check)
 
@@ -113,21 +131,9 @@ async def verify_news(data: InputData) -> Article:
     return fact_check
 
 
-@app.get("/api/summarize/")
-def summarize_text(text: str):
-    """Endpoint to summarize a news article."""
-    summary = summarize(text)
-    if DEBUG:
-        pprint(summary, width=120)
-    return {"summary": summary}
-
-
-@app.get("/api/verify/image")
-def image_check(url: str):
+@app.post("/api/verify/image/")
+def image_check(data: ImageInputData):
     """Endpoint to check if an image is fake."""
+    if DEBUG:
+        pprint(dict(data))
     raise NotImplementedError("This endpoint is not implemented yet.")
-
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app=app, host="localhost", port=8000, use_colors=True)

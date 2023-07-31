@@ -2,10 +2,10 @@ from typing import Tuple
 
 from pymongo import MongoClient
 
-from schemas import Article, InputData
+from schemas import Article, TextInputData
 
 
-def fetch_from_db_if_exists(uri: str, data: InputData) -> Tuple[Article, bool]:
+def fetch_from_db_if_exists(uri: str, data: TextInputData) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
 
@@ -13,7 +13,7 @@ def fetch_from_db_if_exists(uri: str, data: InputData) -> Tuple[Article, bool]:
     ----------
     uri : str
         The MongoDB connection string to be used.
-    data : InputData
+    data : TextInputData
         The data to be checked.
 
     Returns

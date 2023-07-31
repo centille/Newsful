@@ -1,7 +1,7 @@
 from pydantic import AnyHttpUrl, BaseModel, validator
 
 
-class InputData(BaseModel):
+class TextInputData(BaseModel):
     url: AnyHttpUrl
     content: str
 

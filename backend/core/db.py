@@ -9,7 +9,7 @@ from schemas import Article
 
 def add_to_db(uri: str, data: Article) -> Article:
     """
-    add_to_db adds the data to the database.
+    add_to_db calculates all the necessary details and adds the data to the database.
 
     Parameters
     ----------
@@ -17,14 +17,19 @@ def add_to_db(uri: str, data: Article) -> Article:
         The connection string to the MongoDB database.
     data : Article
         The data to be added to the database.
+
+    Returns
+    -------
+    Article
+        The data that was added to the database.
     """
 
     # calculate confidence and references in parallel
-    pool1 = Pool(processes=2)
-    confidence = pool1.apply_async(get_confidence, [data.summary])
-    archive = pool1.apply_async(archiveURL, [data.url])
-    pool1.close()
-    pool1.join()
+    pool = Pool(processes=2)
+    confidence = pool.apply_async(get_confidence, [data.summary])
+    archive = pool.apply_async(archiveURL, [data.url])
+    pool.close()
+    pool.join()
 
     db_data = Article(
         url=data.url,
