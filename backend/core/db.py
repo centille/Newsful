@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from random import randrange
 
 from pymongo import MongoClient
@@ -18,13 +19,20 @@ def add_to_db(uri: str, data: Article) -> Article:
         The data to be added to the database.
     """
 
+    # calculate confidence and references in parallel
+    pool1 = Pool(processes=2)
+    confidence = pool1.apply_async(get_confidence, [data.summary])
+    archive = pool1.apply_async(archiveURL, [data.url])
+    pool1.close()
+    pool1.join()
+
     db_data = Article(
         url=data.url,
         summary=data.summary,
         response=data.response,
         label=data.label,
-        archive=archiveURL(data.url),
-        confidence=get_confidence(data.summary),
+        archive=archive,  # type: ignore
+        confidence=confidence,  # type: ignore
         references=get_top_google_results(data.summary),
         isPhishing=is_phishing(data.url),
         isCredible=is_credible(data.url),
