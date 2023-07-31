@@ -57,7 +57,7 @@ agent = initialize_agent(
     verbose=True,
 )
 template = """. Is this news true or false?
-    Without any comment, return the result in the following JSON format {"label": bool, "explanation": str}
+    Without any comment, return the result in the following JSON format {"label": bool, "response": str}
 """
 
 
@@ -100,7 +100,7 @@ async def verify_news(data: InputData) -> Article:
         pprint("API response does not contain valid JSON.", width=120)
         raise Exception("API response does not contain valid JSON.")
     fact_check.label = data_["label"]
-    fact_check.response = data_["explanation"]
+    fact_check.response = data_["response"]
 
     fact_check = add_to_db(URI, fact_check)
 
