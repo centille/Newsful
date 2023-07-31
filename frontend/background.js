@@ -1,5 +1,5 @@
 chrome.contextMenus.create({
     id: "extractText",
-    title: "Extract Selected Text",
+    title: "Search selected text with Newsful",
     contexts: ["all"]
 });
