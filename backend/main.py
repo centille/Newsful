@@ -2,7 +2,6 @@ import json
 import os
 import warnings
 from datetime import datetime
-from io import StringIO
 from pprint import pprint
 
 from dotenv import load_dotenv
@@ -14,7 +13,7 @@ from pymongo.mongo_client import MongoClient
 
 from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
 from core.fact import fact_check_this
-from schemas import Article, FactCheckResponse, Health, ImageInputData, TextInputData
+from schemas import Article, Health, ImageInputData, TextInputData
 
 # FastAPI app
 app = FastAPI(

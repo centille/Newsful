@@ -27,7 +27,7 @@ def is_phishing(url: AnyHttpUrl) -> bool:
         True if the url is a phishing url, False otherwise.
     """
 
-    model = pickle.load(open("./models/model.pkl", "rb"))
+    model = pickle.load(open("./models/model.pickle", "rb"))
     prediction = model.predict([url])
     return prediction[0] == "good"
 

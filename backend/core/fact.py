@@ -1,4 +1,4 @@
-import json
+from json import load
 from io import StringIO
 
 from langchain.agents import AgentType, initialize_agent, load_tools
@@ -45,8 +45,9 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
 
     # clean
     response = response[l : r + 1].lower()
-    if response.find('"label"') == -1 and response.find("label") != -1:
+    if response.find('"label"') <= 0 and response.find("label") >= 0:
         response = response.replace("label", '"label"')
-    if response.find('"response"') == -1 and response.find("response") != -1:
+    if response.find('"response"') <= 0 and response.find("response") >= 0:
         response = response.replace("response", '"response"')
-    return FactCheckResponse(**json.load(StringIO(response)))
+
+    return FactCheckResponse(**load(StringIO(response)))
