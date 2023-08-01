@@ -63,7 +63,8 @@ def is_credible(url: AnyHttpUrl) -> bool:
         registry_data = soup.find_all("div", {"class": "row queryResponseBodyRow"})
         if registry_data is not None:
             for i in registry_data:
-                if i.find("div", {"class": "col-md-4 queryResponseBodyKey"}).text == "Registered On":
+                i_resp = i.find("div", {"class": "col-md-4 queryResponseBodyKey"})
+                if i_resp is not None and i_resp.text == "Registered On":
                     date_str = i.find("div", {"class": "col-md-8 queryResponseBodyValue"}).text
                     date = datetime.strptime(date_str, "%Y-%m-%d")
                     # if domain is registered in past 500 days, it is not credible
@@ -78,7 +79,7 @@ def is_credible(url: AnyHttpUrl) -> bool:
     if any(domain.endswith(tld) for tld in unsafe_tlds):
         return False
 
-    unreliable_domains = pd.read_parquet("./data/sources.parquet", engine="fastparquet")["domain"].tolist()
+    unreliable_domains = pd.read_parquet("./data/sources.parquet")["domain"].tolist()
     return domain not in unreliable_domains
 
 
@@ -100,7 +101,7 @@ def get_confidence(news: str) -> int:
     model = pickle.load(open("./models/PA.pickle", "rb"))
     vectorizer = pickle.load(open("./models/tfidf_vectorizer.pickle", "rb"))
     tfidf_x = vectorizer.transform([news])
-    confidence = round(model._predict_proba_lr(tfidf_x)[0][1] * 100)
+    confidence = int(round(model._predict_proba_lr(tfidf_x)[0][1] * 100))
     return confidence
 
 

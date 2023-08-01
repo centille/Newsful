@@ -13,6 +13,7 @@ from langchain.llms import OpenAI
 from pymongo.mongo_client import MongoClient
 
 from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
+from core.fact import fact_check_this
 from schemas import Article, FactCheckResponse, Health, ImageInputData, TextInputData
 
 # FastAPI app
@@ -95,23 +96,7 @@ async def verify_news(data: TextInputData) -> Article:
             pprint(dict(fact_check), width=120)
         return fact_check
 
-    response = agent.run(data.content + template)
-    if DEBUG:
-        print("Raw response:")
-        pprint(response, width=120)
-    l = response.find("{")
-    r = response.find("}", l) if l != -1 else -1
-    if l == -1 or r == -1:
-        pprint("API response does not contain valid JSON.", width=120)
-        raise Exception("API response does not contain valid JSON.")
-
-    # clean
-    response = response[l : r + 1].lower()
-    if response.find('"label"') == -1 and response.find("label") != -1:
-        response = response.replace("label", '"label"')
-    if response.find('"response"') == -1 and response.find("response") != -1:
-        response = response.replace("response", '"response"')
-    fact_check_resp = FactCheckResponse(**json.load(StringIO(response)))
+    fact_check_resp = fact_check_this(data, DEBUG)
     if DEBUG:
         print("Filtered Response:")
         pprint(fact_check_resp, width=120)

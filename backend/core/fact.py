@@ -1,48 +1,52 @@
-from typing import Tuple
+import json
+from io import StringIO
 
-from pymongo import MongoClient
+from langchain.agents import AgentType, initialize_agent, load_tools
+from langchain.llms import OpenAI
 
-from schemas import Article, TextInputData
+from schemas import FactCheckResponse, TextInputData
 
 
-def fetch_from_db_if_exists(uri: str, data: TextInputData) -> Tuple[Article, bool]:
-    """
-    fact_checker checks the data against the database.
-
-    Parameters
-    ----------
-    uri : str
-        The MongoDB connection string to be used.
-    data : TextInputData
-        The data to be checked.
-
-    Returns
-    -------
-    Article
-        The result of the fact check.
-    bool
-        Whether the data was found in the database.
-    """
-    url = data.url
-    summary = data.content
-
-    # check if connection is working
-    client = MongoClient(uri)
-    collection = client["NewsFul"]["articles"]
-    if client.admin.command("ping")["ok"] != 1:
-        raise Exception("No connection to database")
-
-    # fetch from database if exists
-    res = collection.find_one({"url": url, "summary": summary})
-    client.close()
-
-    if res:
-        return Article(**res), True
-
-    result = Article(
-        url=url,
-        summary=summary,
-        response="",
+def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
+    """Fact check the data."""
+    llm = OpenAI(
+        max_tokens=200,
+        temperature=0,
+        client=None,
+        model="text-davinci-003",
+        frequency_penalty=1,
+        presence_penalty=0,
+        top_p=1,
     )
+    tools = load_tools(["google-serper"], llm=llm)
+    agent = initialize_agent(
+        tools=tools,
+        llm=llm,
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        verbose=True,
+    )
+    template = """. Is this news true or false?
+        Without any comment, return the result in the following JSON format {"label": bool, "response": str}
+    """
 
-    return result, False
+    response = agent.run(data.content + template)
+
+    if DEBUG:
+        from pprint import pprint
+
+        print("Raw response:")
+        pprint(response, width=120)
+
+    l = response.find("{")
+    r = response.find("}", l) if l != -1 else -1
+    if l == -1 or r == -1:
+        print("API response does not contain valid JSON.")
+        raise Exception("API response does not contain valid JSON.")
+
+    # clean
+    response = response[l : r + 1].lower()
+    if response.find('"label"') == -1 and response.find("label") != -1:
+        response = response.replace("label", '"label"')
+    if response.find('"response"') == -1 and response.find("response") != -1:
+        response = response.replace("response", '"response"')
+    return FactCheckResponse(**json.load(StringIO(response)))
