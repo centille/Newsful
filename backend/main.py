@@ -1,26 +1,33 @@
-import json
 import os
 import warnings
-from datetime import datetime
 from pprint import pprint
 
 import pytesseract
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain.llms import OpenAI
 from PIL import Image
 from pymongo.mongo_client import MongoClient
 
-from core import add_to_db, fact_check_process, fact_check_this, fetch_from_db_if_exists, summarize, to_english
+from core import fact_check_process, summarize, to_english
 from schemas import Article, Health, ImageInputData, TextInputData
+
+# Load environment variables
+load_dotenv()
+# Suppress warnings
+warnings.filterwarnings("ignore")
+# Global variables
+DEBUG = True
+URI = str(os.environ.get("URI"))
 
 # FastAPI app
 app = FastAPI(
     title="Newsful API",
+    summary="API for Newsful - a news summarization and fact checking app.",
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.0.1",
+    debug=DEBUG,
+    docs_url="/",
 )
 
 # FastAPI CORS
@@ -30,14 +37,6 @@ app.add_middleware(
     allow_origins=["*"],
     allow_headers=["*"],
 )
-
-# Load environment variables
-load_dotenv()
-URI = str(os.environ.get("URI"))
-# Suppress warnings
-warnings.filterwarnings("ignore")
-# Global variables
-DEBUG = True
 
 
 @app.get("/api/health/")
@@ -77,10 +76,18 @@ def image_check(data: ImageInputData):
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
+
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     image = Image.open(data.picture_url)
+
+    try:
+        text = pytesseract.image_to_string(image)
+    except Exception as e:
+        print(e)
+        raise Exception("Unable to read image.")
+
     text_data = TextInputData(
         url=data.url,
-        content=pytesseract.image_to_string(image),
+        content=text,
     )
     return fact_check_process(text_data, URI, DEBUG)
