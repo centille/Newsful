@@ -17,8 +17,8 @@ load_dotenv()
 # Suppress warnings
 warnings.filterwarnings("ignore")
 # Global variables
-DEBUG = True
-URI = str(os.environ.get("URI"))
+DEBUG: bool = True
+URI: str = str(os.environ.get("URI"))
 
 # FastAPI app
 app = FastAPI(
@@ -80,11 +80,9 @@ def image_check(data: ImageInputData):
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     image = Image.open(data.picture_url)
 
-    try:
-        text = pytesseract.image_to_string(image)
-    except Exception as e:
-        print(e)
-        raise Exception("Unable to read image.")
+    text = str(pytesseract.image_to_string(image))
+    if DEBUG:
+        print(text)
 
     text_data = TextInputData(
         url=data.url,

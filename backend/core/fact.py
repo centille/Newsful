@@ -37,8 +37,6 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     response = agent.run(data.content + template)
 
     if DEBUG:
-        from pprint import pprint
-
         print("Raw response:")
         pprint(response, width=120)
 
@@ -54,6 +52,10 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
         response = response.replace("label", '"label"')
     if response.find('"response"') <= 0 and response.find("response") >= 0:
         response = response.replace("response", '"response"')
+
+    if DEBUG:
+        print("Cleaned response:")
+        pprint(response, width=120)
 
     return FactCheckResponse(**load(StringIO(response)))
 

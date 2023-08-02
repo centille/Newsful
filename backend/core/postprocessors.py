@@ -34,7 +34,7 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     return prediction[0] == "good"
 
 
-def is_credible(url: AnyHttpUrl) -> bool:
+def is_credible(url: AnyHttpUrl, debug: bool) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -55,6 +55,8 @@ def is_credible(url: AnyHttpUrl) -> bool:
     """
 
     if url.startswith("http://"):
+        if debug:
+            print("URL starts with http://")
         return False
 
     domain = get_domain(url)
@@ -71,18 +73,27 @@ def is_credible(url: AnyHttpUrl) -> bool:
                     date = datetime.strptime(date_str, "%Y-%m-%d")
                     # if domain is registered in past 500 days, it is not credible
                     if (datetime.now() - date).days < 500:
+                        if debug:
+                            print(f"Domain registered on {date_str}")
                         return False
 
     safe_tlds = [".com", ".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
+        if debug:
+            print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
 
     unsafe_tlds = [".info", ".biz", ".online", ".site"]
     if any(domain.endswith(tld) for tld in unsafe_tlds):
+        if debug:
+            print(f"Domain ends with {' or '.join(unsafe_tlds)}")
         return False
 
     unreliable_domains = pd.read_parquet("./data/sources.parquet")["domain"].tolist()
-    return domain not in unreliable_domains
+    res = domain not in unreliable_domains
+    if debug:
+        print(f"Domain not in unreliable domains: {res}")
+    return res
 
 
 def get_confidence(news: str, debug: bool = False) -> int:

@@ -21,7 +21,7 @@ def to_english(text: str) -> str:
     """
     translator = GoogleTranslator(source="auto", target="en")
     text = translator.translate(text)
-    return wordopt(text)
+    return clean_text(text)
 
 
 def get_domain(url: AnyHttpUrl) -> str:
@@ -63,9 +63,9 @@ def summarize(text: str) -> str:
     return model(text, ratio=0.25, use_first=True)
 
 
-def wordopt(text: str) -> str:
+def clean_text(text: str) -> str:
     """
-    wordopt optimizes text.
+    clean_text cleans text.
 
     Parameters
     ----------

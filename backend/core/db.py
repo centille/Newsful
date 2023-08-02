@@ -33,7 +33,7 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         confidence=get_confidence(data.summary, debug=debug),
         references=get_top_google_results(data.summary, debug=debug),
         isPhishing=is_phishing(data.url, debug=debug),
-        isCredible=is_credible(data.url),
+        isCredible=is_credible(data.url, debug=debug),
     )
 
     # clean confidence
