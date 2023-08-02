@@ -7,7 +7,7 @@ from core.postprocessors import archiveURL, get_confidence, get_top_google_resul
 from schemas import Article, TextInputData
 
 
-def add_to_db(uri: str, data: Article) -> Article:
+def add_to_db(uri: str, data: Article, debug: bool) -> Article:
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -29,18 +29,20 @@ def add_to_db(uri: str, data: Article) -> Article:
         summary=data.summary,
         response=data.response,
         label=data.label,
-        archive=archiveURL(data.url),
-        confidence=get_confidence(data.summary),
-        references=get_top_google_results(data.summary),
-        isPhishing=is_phishing(data.url),
+        archive=archiveURL(data.url, debug=debug),
+        confidence=get_confidence(data.summary, debug=debug),
+        references=get_top_google_results(data.summary, debug=debug),
+        isPhishing=is_phishing(data.url, debug=debug),
         isCredible=is_credible(data.url),
     )
 
     # clean confidence
     if db_data.confidence is None:
         db_data.confidence = randrange(70, 90)
-    else:
-        db_data.confidence = max(db_data.confidence, 100 - db_data.confidence)
+
+    if debug:
+        print("Adding to database:")
+        print(db_data)
 
     client = MongoClient(uri)
     collection = client["NewsFul"]["articles"]
@@ -49,7 +51,7 @@ def add_to_db(uri: str, data: Article) -> Article:
     return db_data
 
 
-def fetch_from_db_if_exists(uri: str, data: TextInputData) -> Tuple[Article, bool]:
+def fetch_from_db_if_exists(uri: str, data: TextInputData, debug: bool) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
 
@@ -81,8 +83,12 @@ def fetch_from_db_if_exists(uri: str, data: TextInputData) -> Tuple[Article, boo
     client.close()
 
     if res:
+        if debug:
+            print("Found in database")
         return Article(**res), True
 
+    if debug:
+        print("Not found in database")
     result = Article(
         url=url,
         summary=summary,

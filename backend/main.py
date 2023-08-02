@@ -4,15 +4,16 @@ import warnings
 from datetime import datetime
 from pprint import pprint
 
+import pytesseract
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain.llms import OpenAI
+from PIL import Image
 from pymongo.mongo_client import MongoClient
 
-from core import add_to_db, fetch_from_db_if_exists, summarize, to_english
-from core.fact import fact_check_this
+from core import add_to_db, fact_check_process, fact_check_this, fetch_from_db_if_exists, summarize, to_english
 from schemas import Article, Health, ImageInputData, TextInputData
 
 # FastAPI app
@@ -37,27 +38,6 @@ URI = str(os.environ.get("URI"))
 warnings.filterwarnings("ignore")
 # Global variables
 DEBUG = True
-
-# Initialize agent
-llm = OpenAI(
-    max_tokens=200,
-    temperature=0,
-    client=None,
-    model="text-davinci-003",
-    frequency_penalty=1,
-    presence_penalty=0,
-    top_p=1,
-)
-tools = load_tools(["google-serper"], llm=llm)
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True,
-)
-template = """. Is this news true or false?
-    Without any comment, return the result in the following JSON format {"label": bool, "response": str}
-"""
 
 
 @app.get("/api/health/")
@@ -89,30 +69,7 @@ async def verify_news(data: TextInputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
-    fact_check, exists = fetch_from_db_if_exists(URI, data)
-    if exists:
-        if DEBUG:
-            pprint(dict(fact_check), width=120)
-        return fact_check
-
-    fact_check_resp = fact_check_this(data, DEBUG)
-    if DEBUG:
-        print("Filtered Response:")
-        pprint(fact_check_resp, width=120)
-
-    # assign to right variable
-    fact_check.label = fact_check_resp.label
-    fact_check.response = fact_check_resp.response
-
-    fact_check = add_to_db(URI, fact_check)
-
-    if DEBUG:
-        file = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
-        fact_check_dict = dict(fact_check)
-        json.dump(fact_check_dict, open(file, "w"), indent=4)
-        pprint(fact_check_dict, width=120)
-
-    return fact_check
+    return fact_check_process(data, URI, DEBUG)
 
 
 @app.post("/api/verify/image/")
@@ -120,4 +77,10 @@ def image_check(data: ImageInputData):
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
-    raise NotImplementedError("This endpoint is not implemented yet.")
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    image = Image.open(data.picture_url)
+    text_data = TextInputData(
+        url=data.url,
+        content=pytesseract.image_to_string(image),
+    )
+    return fact_check_process(text_data, URI, DEBUG)

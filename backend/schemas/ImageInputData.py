@@ -4,8 +4,8 @@ from pydantic import AnyHttpUrl, BaseModel, validator
 
 
 class ImageInputData(BaseModel):
+    url: AnyHttpUrl
     picture_url: AnyHttpUrl
-    context: Optional[AnyHttpUrl]
 
     @validator("picture_url")
     def check_image_type(cls, v):

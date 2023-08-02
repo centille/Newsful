@@ -12,7 +12,7 @@ from waybackpy import WaybackMachineSaveAPI
 from core.utils import get_domain
 
 
-def is_phishing(url: AnyHttpUrl) -> bool:
+def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     """
     is_phishing checks if the url is a phishing url.
 
@@ -29,6 +29,8 @@ def is_phishing(url: AnyHttpUrl) -> bool:
 
     model = pickle.load(open("./models/model.pickle", "rb"))
     prediction = model.predict([url])
+    if debug:
+        print(f"Prediction: {prediction[0]}")
     return prediction[0] == "good"
 
 
@@ -83,7 +85,7 @@ def is_credible(url: AnyHttpUrl) -> bool:
     return domain not in unreliable_domains
 
 
-def get_confidence(news: str) -> int:
+def get_confidence(news: str, debug: bool = False) -> int:
     """
     get_confidence returns the confidence of the news being fake.
 
@@ -102,10 +104,12 @@ def get_confidence(news: str) -> int:
     vectorizer = pickle.load(open("./models/tfidf_vectorizer.pickle", "rb"))
     tfidf_x = vectorizer.transform([news])
     confidence = int(round(model._predict_proba_lr(tfidf_x)[0][1] * 100))
+    if debug:
+        print(f"Confidence: {confidence}%")
     return confidence
 
 
-def archiveURL(url: AnyHttpUrl) -> str:
+def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str:
     """
     archiveURL returns the archive url of given url
 
@@ -128,12 +132,14 @@ def archiveURL(url: AnyHttpUrl) -> str:
     )
     try:
         archive_url = save_api.save()
+        if debug:
+            print(f"Archived URL: {archive_url}")
         return archive_url
     except Exception:
         return url
 
 
-def get_top_google_results(query: str, count: int = 5) -> List[AnyHttpUrl]:
+def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> List[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 
@@ -149,9 +155,12 @@ def get_top_google_results(query: str, count: int = 5) -> List[AnyHttpUrl]:
     List[AnyHttpUrl]
         The list of top google search results for the given query.
     """
-    try:
-        google_search = GoogleSearchAPIWrapper(search_engine="google")
-        results = google_search.results(query, count)
-        return [result["link"] for result in results]
-    except Exception:
-        return get_top_google_results(query, count - 1)
+
+    google_search = GoogleSearchAPIWrapper(search_engine="google")
+    results = google_search.results(query, count)
+    result_links = [result["link"] for result in results]
+    if debug:
+        print(f"Top {count} Google Search Results:")
+        for i, link in enumerate(result_links, start=1):
+            print(f"{i}. {link}")
+    return result_links
