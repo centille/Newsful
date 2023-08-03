@@ -15,8 +15,19 @@ from schemas import FactCheckResponse, TextInputData
 from schemas.Article import Article
 
 
+class YouIdiotException(Exception):
+    """You idiot."""
+
+    def __init__(self, message: str) -> None:
+        """Initialize."""
+        self.message = message
+        super().__init__("You idiot! " + self.message)
+
+
 def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     """Fact check the data."""
+    if data.content == "":
+        raise YouIdiotException("No content was provided.")
     llm = OpenAI(
         max_tokens=200,
         temperature=0,
