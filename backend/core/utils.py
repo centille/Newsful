@@ -80,14 +80,30 @@ def clean_text(text: str) -> str:
     str
         The optimized text.
     """
-    text = text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ")
-    return text.rstrip(".")
+    return text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ").rstrip(".")
 
 
 def get_image(image_url: str):
-    response: requests.Response = requests.get(image_url, allow_redirects=True)
+    """
+    get_image fetches an image from a url.
 
-    # Check if the response was successful
+    Parameters
+    ----------
+    image_url : str
+        The url of the image.
+
+    Returns
+    -------
+    PIL.Image
+        The image fetched from the url.
+
+    Raises
+    ------
+    Exception
+        Raised if the image could not be fetched.
+    """
+
+    response: requests.Response = requests.get(image_url, allow_redirects=True)
     if response.status_code == 200:
         image_content: bytes = response.content
         return Image.open(BytesIO(image_content))

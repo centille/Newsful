@@ -20,12 +20,26 @@ class YouIdiotException(Exception):
 
     def __init__(self, message: str) -> None:
         """Initialize."""
-        self.message = message
+        self.message: str = message
         super().__init__("You idiot! " + self.message)
 
 
 def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
-    """Fact check the data."""
+    """
+    fact_check_this checks the data against the OpenAI API.
+
+    Parameters
+    ----------
+    data : TextInputData
+        The data to be checked.
+    DEBUG : bool
+        Whether to print debug statements or not.
+
+    Returns
+    -------
+    FactCheckResponse
+        The result of the fact check.
+    """
     if data.content == "":
         raise YouIdiotException("No content was provided.")
     llm = OpenAI(
@@ -75,12 +89,32 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
 
 
 def fact_check_process(text_data: TextInputData, URI: str, DEBUG: bool) -> Article:
+    """
+    fact_check_process checks the data against the OpenAI API.
+
+    Parameters
+    ----------
+    text_data : TextInputData
+        The data to be checked.
+    URI : str
+        The URI of the article.
+    DEBUG : bool
+        Whether to print debug statements or not.
+
+    Returns
+    -------
+    Article
+        The result of the fact check.
+    """
     fact_check, exists = fetch_from_db_if_exists(URI, text_data, DEBUG)
     if exists:
         if DEBUG:
+            print("Found in DB:")
             pprint(dict(fact_check), width=120)
         return fact_check
 
+    if DEBUG:
+        print("Not found in DB. Fetching from API...")
     fact_check_resp: FactCheckResponse = fact_check_this(text_data, DEBUG)
     if DEBUG:
         print("Filtered Response:")

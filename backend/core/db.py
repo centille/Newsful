@@ -70,6 +70,7 @@ def fetch_from_db_if_exists(uri: str, data: TextInputData, debug: bool) -> Tuple
     bool
         Whether the data was found in the database.
     """
+
     url: AnyHttpUrl = data.url
     summary: str = data.content
 
