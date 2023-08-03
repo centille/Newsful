@@ -18,7 +18,7 @@ ___
 - [ChatGPT API](https://chat.openai.com/)
 - [Google Serper API](https://serper.dev)
 - [Langchain](https://www.langchain.com/)
-- [BERT Text Summarizer](https://pypi.org/project/bert-extractive-summarizer/)
+- [pytesseract](https://pypi.org/project/pytesseract/)
 
 ___
 
