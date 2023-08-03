@@ -22,7 +22,6 @@ URI: str = str(os.environ.get("URI"))
 # FastAPI app
 app = FastAPI(
     title="Newsful API",
-    summary="API for Newsful - a news summarization and fact checking app.",
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.0.1",
     debug=DEBUG,
@@ -78,7 +77,9 @@ def image_check(data: ImageInputData) -> Article:
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
     image = get_image(data.picture_url)
-    res: bytes | str = pytesseract.image_to_string(image)  # type: ignore
+    res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)
+    if not isinstance(res, (str, bytes)):
+        raise Exception("Unable to read image.")
     text: str = res if isinstance(res, str) else str(res)
     if DEBUG:
         print(f"{text=}")  # type: ignore
