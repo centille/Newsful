@@ -3,11 +3,12 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
         // If the selected text is an image, send it to the backend
         if (info?.mediaType && info?.mediaType === "image") {
             console.log("Image selected");
+            const imgUrl = info.srcUrl;
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.executeScript(tabs[0].id, {
                     code: `
                     var data = {
-                        content: window.getSelection().toString(),
+                        picture_url: "${imgUrl}",
                         url: window.location.href
                     };
                     console.log(data);
