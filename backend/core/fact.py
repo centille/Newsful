@@ -1,11 +1,12 @@
 import json
+import os
 from datetime import datetime
 from io import StringIO
 from json import load
 from pprint import pprint
 from typing import List
 
-from langchain.agents import AgentType, initialize_agent, load_tools, AgentExecutor  # type: ignore
+from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
 from langchain.llms import OpenAI
 from langchain.tools import BaseTool
 
@@ -81,6 +82,10 @@ def fact_check_process(text_data: TextInputData, URI: str, DEBUG: bool) -> Artic
     fact_check: Article = add_to_db(URI, fact_check, DEBUG)
 
     if DEBUG:
+        # check if "output" directory exists
+        if not os.path.exists("./output"):
+            os.mkdir("./output")
+
         file: str = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
         fact_check_dict = dict(fact_check)
         pprint(fact_check_dict, width=120)

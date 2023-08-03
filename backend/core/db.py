@@ -1,7 +1,7 @@
 from random import randrange
 from typing import Any, Tuple
-from pydantic import AnyHttpUrl
 
+from pydantic import AnyHttpUrl
 from pymongo import MongoClient
 
 from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
