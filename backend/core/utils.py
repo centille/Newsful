@@ -1,8 +1,8 @@
 from urllib.parse import urlparse
 
-from deep_translator import GoogleTranslator
+from deep_translator import GoogleTranslator  # type: ignore
 from pydantic import AnyHttpUrl
-from summarizer import Summarizer
+from summarizer import Summarizer  # type: ignore
 
 
 def to_english(text: str) -> str:
@@ -20,7 +20,7 @@ def to_english(text: str) -> str:
         The text translated to english.
     """
     translator = GoogleTranslator(source="auto", target="en")
-    text = translator.translate(text)
+    text = translator.translate(text)  # type: ignore
     return clean_text(text)
 
 

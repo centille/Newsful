@@ -2,7 +2,7 @@ import os
 import warnings
 from pprint import pprint
 
-import pytesseract
+import pytesseract  # type: ignore
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,8 +44,8 @@ def health() -> Health:
     """Health check endpoint."""
 
     db_is_working = False
-    client = MongoClient(URI)
-    if client.admin.command("ping")["ok"] == 1:
+    client = MongoClient(URI)  # type: ignore
+    if client.admin.command("ping")["ok"] == 1:  # type: ignore
         client.close()
         if DEBUG:
             print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -55,7 +55,7 @@ def health() -> Health:
 
 
 @app.get("/api/summarize/")
-def summarize_text(text: str):
+def summarize_text(text: str) -> dict[str, str]:
     """Endpoint to summarize a news article."""
     summary = summarize(text)
     if DEBUG:
@@ -72,7 +72,7 @@ async def verify_news(data: TextInputData) -> Article:
 
 
 @app.post("/api/verify/image/")
-def image_check(data: ImageInputData):
+def image_check(data: ImageInputData) -> Article:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
@@ -80,9 +80,10 @@ def image_check(data: ImageInputData):
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     image = Image.open(data.picture_url)
 
-    text = str(pytesseract.image_to_string(image))
+    res = pytesseract.image_to_string(image)  # type: ignore
+    text: str = res if isinstance(res, str) else str(res)
     if DEBUG:
-        print(text)
+        print(text)  # type: ignore
 
     text_data = TextInputData(
         url=data.url,
