@@ -1,24 +1,14 @@
 import os
 import warnings
 from pprint import pprint
-import requests
 
 import pytesseract  # type: ignore
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
 from pymongo.mongo_client import MongoClient
 
-from core import (
-    add_to_db,
-    fact_check_process,
-    fact_check_this,
-    fetch_from_db_if_exists,
-    summarize,
-    to_english,
-    get_image,
-)
+from core import fact_check_process, get_image, summarize, to_english
 from schemas import Article, Health, ImageInputData, TextInputData
 
 # Load environment variables
@@ -66,7 +56,7 @@ def health() -> Health:
 @app.get("/api/summarize/")
 def summarize_text(text: str) -> dict[str, str]:
     """Endpoint to summarize a news article."""
-    summary = summarize(text)
+    summary: str = summarize(text)
     if DEBUG:
         pprint(summary, width=120)
     return {"summary": summary}
@@ -85,9 +75,7 @@ def image_check(data: ImageInputData) -> Article:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
-    pytesseract.pytesseract.tesseract_cmd = (
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    )
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
     image = get_image(data.picture_url)
     res: bytes | str = pytesseract.image_to_string(image)  # type: ignore

@@ -1,15 +1,14 @@
-from typing import Any
+from io import BytesIO
 from urllib.parse import urlparse
 
+import requests
 from deep_translator import GoogleTranslator  # type: ignore
+from PIL import Image
 from pydantic import AnyHttpUrl
 from summarizer import Summarizer  # type: ignore
-from PIL import Image
-import requests
-from io import BytesIO
 
 
-def to_english(text: str) -> str:
+def to_english(text: str) -> str:  # type: ignore
     """
     to_english translates text to english if it is not already in english.
 
@@ -23,8 +22,8 @@ def to_english(text: str) -> str:
     str
         The text translated to english.
     """
-    translator: Any = GoogleTranslator(source="auto", target="en")
-    text: str = translator.translate(text)
+    translator: GoogleTranslator = GoogleTranslator(source="auto", target="en")
+    text: str = translator.translate(text)  # type: ignore
     return clean_text(text)
 
 
@@ -86,10 +85,10 @@ def clean_text(text: str) -> str:
 
 
 def get_image(image_url: str):
-    response = requests.get(image_url, allow_redirects=True)
+    response: requests.Response = requests.get(image_url, allow_redirects=True)
 
     # Check if the response was successful
     if response.status_code == 200:
-        image_content = response.content
+        image_content: bytes = response.content
         return Image.open(BytesIO(image_content))
     raise Exception(f"Failed to fetch image: {response.status_code}")
