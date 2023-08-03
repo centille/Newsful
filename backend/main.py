@@ -1,26 +1,33 @@
-import json
 import os
 import warnings
-from datetime import datetime
 from pprint import pprint
 
-import pytesseract
+import pytesseract  # type: ignore
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain.llms import OpenAI
 from PIL import Image
 from pymongo.mongo_client import MongoClient
 
-from core import add_to_db, fact_check_process, fact_check_this, fetch_from_db_if_exists, summarize, to_english
+from core import fact_check_process, summarize, to_english
 from schemas import Article, Health, ImageInputData, TextInputData
+
+# Load environment variables
+load_dotenv()
+# Suppress warnings
+warnings.filterwarnings("ignore")
+# Global variables
+DEBUG: bool = True
+URI: str = str(os.environ.get("URI"))
 
 # FastAPI app
 app = FastAPI(
     title="Newsful API",
+    summary="API for Newsful - a news summarization and fact checking app.",
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.0.1",
+    debug=DEBUG,
+    docs_url="/",
 )
 
 # FastAPI CORS
@@ -31,22 +38,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load environment variables
-load_dotenv()
-URI = str(os.environ.get("URI"))
-# Suppress warnings
-warnings.filterwarnings("ignore")
-# Global variables
-DEBUG = True
-
 
 @app.get("/api/health/")
 def health() -> Health:
     """Health check endpoint."""
 
     db_is_working = False
-    client = MongoClient(URI)
-    if client.admin.command("ping")["ok"] == 1:
+    client = MongoClient(URI)  # type: ignore
+    if client.admin.command("ping")["ok"] == 1:  # type: ignore
         client.close()
         if DEBUG:
             print("Pinged your deployment. You successfully connected to MongoDB!")
@@ -56,7 +55,7 @@ def health() -> Health:
 
 
 @app.get("/api/summarize/")
-def summarize_text(text: str):
+def summarize_text(text: str) -> dict[str, str]:
     """Endpoint to summarize a news article."""
     summary = summarize(text)
     if DEBUG:
@@ -73,14 +72,21 @@ async def verify_news(data: TextInputData) -> Article:
 
 
 @app.post("/api/verify/image/")
-def image_check(data: ImageInputData):
+def image_check(data: ImageInputData) -> Article:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
+
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     image = Image.open(data.picture_url)
+
+    res = pytesseract.image_to_string(image)  # type: ignore
+    text: str = res if isinstance(res, str) else str(res)
+    if DEBUG:
+        print(text)  # type: ignore
+
     text_data = TextInputData(
         url=data.url,
-        content=pytesseract.image_to_string(image),
+        content=text,
     )
     return fact_check_process(text_data, URI, DEBUG)

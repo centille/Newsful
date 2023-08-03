@@ -6,18 +6,14 @@ class FactCheckResponse(BaseModel):
     response: str
 
     @validator("label")
-    def label_must_be_boolean(cls, v):
+    def label_must_be_boolean(cls, v: str | bool) -> bool:
         if isinstance(v, str):
             return v.lower() == "true"
-        if isinstance(v, bool):
-            return v
-        raise ValueError("label must be a boolean value")
+        return v
 
     @validator("response")
-    def response_must_be_string(cls, v):
-        if isinstance(v, str):
-            # remove the Reference of "GPT Model" from response (if any)
-            if "GPT Model" in v:
-                v = v[: v.find("GPT Model")]
-            return v
-        raise ValueError("response must be a string value")
+    def response_must_be_string(cls, v: str) -> str:
+        # remove the Reference of "GPT Model" from response (if any)
+        if "GPT Model" in v:
+            v = v[: v.find("GPT Model")]
+        return v

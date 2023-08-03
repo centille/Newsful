@@ -1,6 +1,7 @@
 from random import randrange
-from typing import Tuple
+from typing import Any, Tuple
 
+from pydantic import AnyHttpUrl
 from pymongo import MongoClient
 
 from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
@@ -33,7 +34,7 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         confidence=get_confidence(data.summary, debug=debug),
         references=get_top_google_results(data.summary, debug=debug),
         isPhishing=is_phishing(data.url, debug=debug),
-        isCredible=is_credible(data.url),
+        isCredible=is_credible(data.url, debug=debug),
     )
 
     # clean confidence
@@ -44,9 +45,9 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         print("Adding to database:")
         print(db_data)
 
-    client = MongoClient(uri)
-    collection = client["NewsFul"]["articles"]
-    collection.insert_one(dict(db_data))
+    client = MongoClient(uri)  # type: ignore
+    collection = client["NewsFul"]["articles"]  # type: ignore
+    collection.insert_one(dict(db_data))  # type: ignore
     client.close()
     return db_data
 
@@ -69,17 +70,17 @@ def fetch_from_db_if_exists(uri: str, data: TextInputData, debug: bool) -> Tuple
     bool
         Whether the data was found in the database.
     """
-    url = data.url
-    summary = data.content
+    url: AnyHttpUrl = data.url
+    summary: str = data.content
 
     # check if connection is working
-    client = MongoClient(uri)
-    collection = client["NewsFul"]["articles"]
-    if client.admin.command("ping")["ok"] != 1:
+    client = MongoClient(uri)  # type: ignore
+    collection = client["NewsFul"]["articles"]  # type: ignore
+    if client.admin.command("ping")["ok"] != 1:  # type: ignore
         raise Exception("No connection to database")
 
     # fetch from database if exists
-    res = collection.find_one({"url": url, "summary": summary})
+    res: dict[str, Any] = collection.find_one({"url": url, "summary": summary})  # type: ignore
     client.close()
 
     if res:

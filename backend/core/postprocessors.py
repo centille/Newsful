@@ -1,10 +1,10 @@
 import pickle
 from datetime import datetime
-from typing import List
+from typing import Any, Dict, List
 
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, ResultSet
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
@@ -28,13 +28,13 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     """
 
     model = pickle.load(open("./models/model.pickle", "rb"))
-    prediction = model.predict([url])
+    prediction: str = model.predict([url])
     if debug:
         print(f"Prediction: {prediction[0]}")
     return prediction[0] == "good"
 
 
-def is_credible(url: AnyHttpUrl) -> bool:
+def is_credible(url: AnyHttpUrl, debug: bool) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -55,34 +55,45 @@ def is_credible(url: AnyHttpUrl) -> bool:
     """
 
     if url.startswith("http://"):
+        if debug:
+            print("URL starts with http://")
         return False
 
-    domain = get_domain(url)
-    domain_without_subdomain = ".".join(domain.split(".")[-2:])
-    req = requests.get(f"https://who.is/whois/{domain_without_subdomain}")
+    domain: str = get_domain(url)
+    domain_without_subdomain: str = ".".join(domain.split(".")[-2:])
+    req: requests.Response = requests.get(f"https://who.is/whois/{domain_without_subdomain}")
     if req.status_code == 200:
         soup = BeautifulSoup(req.text, "html.parser")
-        registry_data = soup.find_all("div", {"class": "row queryResponseBodyRow"})
-        if registry_data is not None:
+        registry_data: ResultSet[Any] = soup.find_all("div", {"class": "row queryResponseBodyRow"})
+        if len(registry_data) > 0:
             for i in registry_data:
                 i_resp = i.find("div", {"class": "col-md-4 queryResponseBodyKey"})
                 if i_resp is not None and i_resp.text == "Registered On":
-                    date_str = i.find("div", {"class": "col-md-8 queryResponseBodyValue"}).text
-                    date = datetime.strptime(date_str, "%Y-%m-%d")
+                    date_str: str = i.find("div", {"class": "col-md-8 queryResponseBodyValue"}).text
+                    date: datetime = datetime.strptime(date_str, "%Y-%m-%d")
                     # if domain is registered in past 500 days, it is not credible
                     if (datetime.now() - date).days < 500:
+                        if debug:
+                            print(f"Domain registered on {date_str}")
                         return False
 
-    safe_tlds = [".com", ".gov", ".org", ".edu", ".gov.in"]
+    safe_tlds: list[str] = [".com", ".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
+        if debug:
+            print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
 
-    unsafe_tlds = [".info", ".biz", ".online", ".site"]
+    unsafe_tlds: list[str] = [".info", ".biz", ".online", ".site"]
     if any(domain.endswith(tld) for tld in unsafe_tlds):
+        if debug:
+            print(f"Domain ends with {' or '.join(unsafe_tlds)}")
         return False
 
-    unreliable_domains = pd.read_parquet("./data/sources.parquet")["domain"].tolist()
-    return domain not in unreliable_domains
+    unreliable_domains: list[str] = pd.read_parquet("./data/sources.parquet")["domain"].tolist()
+    res: bool = domain not in unreliable_domains
+    if debug:
+        print(f"Domain not in unreliable domains: {res}")
+    return res
 
 
 def get_confidence(news: str, debug: bool = False) -> int:
@@ -131,7 +142,7 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str:
         max_tries=12,
     )
     try:
-        archive_url = save_api.save()
+        archive_url: str = save_api.save()
         if debug:
             print(f"Archived URL: {archive_url}")
         return archive_url
@@ -139,7 +150,7 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str:
         return url
 
 
-def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> List[AnyHttpUrl]:
+def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> list[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 
@@ -152,13 +163,13 @@ def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> L
 
     Returns
     -------
-    List[AnyHttpUrl]
+    list[AnyHttpUrl]
         The list of top google search results for the given query.
     """
 
     google_search = GoogleSearchAPIWrapper(search_engine="google")
-    results = google_search.results(query, count)
-    result_links = [result["link"] for result in results]
+    results: List[Dict[str, Any]] = google_search.results(query, count)  # type: ignore
+    result_links: list[AnyHttpUrl] = [result["link"] for result in results]
     if debug:
         print(f"Top {count} Google Search Results:")
         for i, link in enumerate(result_links, start=1):
