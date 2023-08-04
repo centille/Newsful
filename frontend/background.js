@@ -1,9 +1,11 @@
+// Create a menu Item in the right click context menu of the browser
 chrome.contextMenus.create({
     id: "extractText",
     title: "Search selected text with Newsful",
     contexts: ["all"]
 });
 
+// Function to create a popup window to show the results
 const create_popup = () => {
     chrome.windows.create({
         url: "./popup.html",
@@ -12,13 +14,18 @@ const create_popup = () => {
         height: 600,
         focused: true
     }, function (window) {
+        // Shift focus to the popup window
         chrome.windows.update(window.id, { focused: true });
     });
 }
 
+// Listen for the verifyImage and verifyText messages from the content script
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
+        // Call the function to create the popup page and shift focus to it
         create_popup();
+
+        // If the selected data is an image
         if (message.action === "verifyImage") {
             fetch('http://localhost:8000/api/verify/image', {
                 method: 'POST',
@@ -31,6 +38,7 @@ chrome.runtime.onMessage.addListener(
                 .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
                 .catch(error => console.error(error));
         }
+        // If the selected data is text
         else if (message.action === "verifyText") {
             fetch('http://localhost:8000/api/verify/text', {
                 method: 'POST',
@@ -46,11 +54,11 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
+// Listen for the click event on the menu item
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
     if (info.menuItemId === "extractText") {
-        // If the selected text is an image, send it to the backend
+        // If the selected data is an image, extract the image url and send the message to the content script
         if (info?.mediaType && info?.mediaType === "image") {
-            console.log("Image selected");
             const imgUrl = info.srcUrl;
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.executeScript(tabs[0].id, {
@@ -65,7 +73,7 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
                 });
             });
         }
-        // Otherwise, send the selected text to the backend
+        // If the selected data is text, extract the text and send the message to the content script
         else {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.executeScript(tabs[0].id, {
@@ -74,18 +82,11 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
                         content: window.getSelection().toString(),
                         url: window.location.href
                     };
-                    console.log(dt);
+
                     chrome.runtime.sendMessage({ action: "verifyText", data: dt });
                     `
                 });
             });
-            console.log("Menu item clicked!");
         }
     }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    chrome.windows.getCurrent(function (window) {
-        chrome.windows.update(window.id, { focused: true });
-    });
 });
