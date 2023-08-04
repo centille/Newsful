@@ -1,6 +1,12 @@
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
         if (message.action === "displayResponse") {
+            const loading = document.getElementById("loading");
+
+            if (loading && loading.parentNode) {
+                loading.parentNode.removeChild(loading);
+            }
+
             let ele = document.getElementById("result");
 
             console.log(message.data.references);
@@ -12,4 +18,3 @@ chrome.runtime.onMessage.addListener(
         }
     }
 );
-

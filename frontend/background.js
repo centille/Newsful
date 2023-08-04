@@ -4,11 +4,22 @@ chrome.contextMenus.create({
     contexts: ["all"]
 });
 
+const create_popup = () => {
+    chrome.windows.create({
+        url: "./popup.html",
+        type: "popup",
+        width: 600,
+        height: 600,
+        focused: true
+    }, function (window) {
+        chrome.windows.update(window.id, { focused: true });
+    });
+}
+
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
+        create_popup();
         if (message.action === "verifyImage") {
-            chrome.windows.update(popupWindowId, { focused: true });
-
             fetch('http://localhost:8000/api/verify/image', {
                 method: 'POST',
                 body: JSON.stringify(message.data),
@@ -17,20 +28,23 @@ chrome.runtime.onMessage.addListener(
                 },
             })
                 .then(response => response.json())
-                .then(json => {
-                    chrome.runtime.sendMessage({ action: "displayResponse", data: json });
-                })
+                .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
+                .catch(error => console.error(error));
+        }
+        else if (message.action === "verifyText") {
+            fetch('http://localhost:8000/api/verify/text', {
+                method: 'POST',
+                body: JSON.stringify(message.data),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then(response => response.json())
+                .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
                 .catch(error => console.error(error));
         }
     }
 );
-
-let popupWindowId;
-
-chrome.windows.getCurrent(function (window) {
-    popupWindowId = window.id;
-    console.log("Popup Window ID:", popupWindowId);
-});
 
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
     if (info.menuItemId === "extractText") {
@@ -45,9 +59,6 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
                         picture_url: "${imgUrl}",
                         url: window.location.href
                     };
-                    console.log(dt);
-
-                    console.log(${popupWindowId});
 
                     chrome.runtime.sendMessage({ action: "verifyImage", data: dt });
                     `
@@ -59,34 +70,22 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 chrome.tabs.executeScript(tabs[0].id, {
                     code: `
-                    var data = {
+                    var dt = {
                         content: window.getSelection().toString(),
                         url: window.location.href
                     };
-                    console.log(data);
-
-                    var result;
-                    fetch('http://localhost:8000/api/verify/text', {
-                        method: 'POST',
-                        body: JSON.stringify(data),
-                        headers: {
-                            'Content-type': 'application/json; charset=UTF-8',
-                        },
-                    })
-                        .then(response => response.json())
-                        .then(json => {
-                            console.log(json);
-                            result = json;
-                        })
-                        .then(() => {
-                            console.log(result);
-                            alert(result.label);
-                        })
-                        .catch(error => console.error(error));
+                    console.log(dt);
+                    chrome.runtime.sendMessage({ action: "verifyText", data: dt });
                     `
                 });
             });
             console.log("Menu item clicked!");
         }
     }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    chrome.windows.getCurrent(function (window) {
+        chrome.windows.update(window.id, { focused: true });
+    });
 });
