@@ -30,7 +30,7 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         summary=data.summary,
         response=data.response,
         label=data.label,
-        archive=archiveURL(data.url, debug=debug),
+        archive=data.url,
         confidence=get_confidence(data.summary, debug=debug),
         references=get_top_google_results(data.summary, debug=debug),
         isPhishing=is_phishing(data.url, debug=debug),
@@ -41,10 +41,16 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
     if db_data.confidence is None:
         db_data.confidence = randrange(70, 90)
 
+    # Archive URL is news is false
+    if not db_data.label:
+        db_data.archive = archiveURL(db_data.url, debug=debug)
+
+    # Print object being added to DB
     if debug:
         print("Adding to database:")
         print(db_data)
 
+    # Add object to DB
     client = MongoClient(uri)  # type: ignore
     collection = client["NewsFul"]["articles"]  # type: ignore
     collection.insert_one(dict(db_data))  # type: ignore
