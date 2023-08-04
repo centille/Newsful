@@ -155,4 +155,6 @@ cython_debug/
 # VSCode project settings
 .vscode/
 factcheck/
-output/
+
+# streamlit crap
+website/.streamlit/secrets.toml

@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "newsful-dashboard"
+version = "0.1.0"
+description = "Dashboard to view the Newsful database"
+authors = ["Siddhesh Agarwal <siddhesh.agarwal@gmail.com>"]
+readme = "README.md"
+packages = [{include = "newsful_app"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.25.0"
+pymongo = "^4.4.1"
+python-dotenv = "^1.0.0"
+pydantic = "^2.1.1"
+matplotlib = "^3.7.2"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
