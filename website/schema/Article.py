@@ -1,4 +1,4 @@
-from pydantic import AnyHttpUrl, BaseModel, validator
+from pydantic import AnyHttpUrl, BaseModel, field_validator
 
 
 class Article(BaseModel):
@@ -12,7 +12,7 @@ class Article(BaseModel):
     isPhishing: bool
     isCredible: bool
 
-    @validator("label")
+    @field_validator("label")
     def change_to_bool(cls, v: bool | str) -> bool:
         if isinstance(v, str):
             if v.lower() == "fake":
