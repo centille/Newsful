@@ -2,7 +2,7 @@
 
 ## About
 
-This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI application that uses OpenAI's GPT-3, google serper connected using langchain to fact check news articles. It also contains a knowledge graph with built in phishing detection.
+This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI application that uses OpenAI's GPT-3, google serper connected using langchain to fact-check news articles. It also contains a knowledge graph with built-in phishing detection.
 
 ## Dependencies
 
@@ -36,8 +36,10 @@ $ pip install poetry
 $ poetry install
 ```
 
+**Note**: If an error during greenlet installation, `pip install greenlet` first and then rerun `poetry install`.
+
 5. Run the API
 
 ```
-$ python ./main.py
+$ uvicorn main:app --host localhost --reload
 ```
