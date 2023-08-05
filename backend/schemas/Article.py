@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, validator
+from pydantic import AnyHttpUrl, BaseModel, validator  # type: ignore
 
 
 class Article(BaseModel):
