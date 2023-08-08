@@ -1,14 +1,16 @@
+import io
 import os
 import warnings
 from pprint import pprint
-
 import pytesseract  # type: ignore
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.mongo_client import MongoClient
+import requests
 
 from core import fact_check_process, get_image, summarize, to_english
+from core.image import image_is_true
 from schemas import Article, Health, ImageInputData, TextInputData
 
 # Load environment variables
@@ -72,12 +74,15 @@ async def verify_news(data: TextInputData) -> Article:
 
 
 @app.post("/api/verify/image/")
-def image_check(data: ImageInputData) -> Article:
+def image_check(data: ImageInputData) -> Article | bool:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
     pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"  # type: ignore
 
+    response: requests.Response = requests.get(data.picture_url, allow_redirects=True)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch image: {response.status_code}")
     image = get_image(data.picture_url)
     res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
     if not isinstance(res, (str, bytes)):
@@ -86,6 +91,12 @@ def image_check(data: ImageInputData) -> Article:
     if DEBUG:
         print(f"{text=}")
 
+    if len(text) < 10:
+        image_bytes = io.BytesIO()
+        image.save(image_bytes, format="PNG")
+        image_bytes = image_bytes.getvalue()
+        ela_result = image_is_true(image_bytes)
+        return ela_result
     text_data = TextInputData(
         url=data.url,
         content=text,
