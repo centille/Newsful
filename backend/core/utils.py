@@ -1,7 +1,8 @@
 from urllib.parse import urlparse
-from pydantic import AnyHttpUrl
+
 import requests
 from bs4 import BeautifulSoup
+from pydantic import AnyHttpUrl
 
 
 def clean_text(text: str) -> str:
@@ -28,6 +29,20 @@ def clean_text(text: str) -> str:
 
 
 def tokenize(text: str) -> list[str]:
+    """
+    tokenize A custom tokenizer.
+
+    Parameters
+    ----------
+    text : str
+        The text to be tokenized.
+
+    Returns
+    -------
+    list[str]
+        The tokenized text.
+    """
+
     tokens: list[str] = []
     token: str = ""
     for char in text:
@@ -64,4 +79,4 @@ def get_domain(url: AnyHttpUrl) -> str:
     str
         The domain of the url.
     """
-    return urlparse(str(url)).netloc
+    return urlparse(url).netloc

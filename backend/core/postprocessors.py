@@ -4,13 +4,13 @@ import ssl
 from datetime import datetime
 from typing import Any, Dict, List
 
-from core.utils import clean_text
+import pandas as pd
 import whois  # type: ignore
-from backports.ssl_match_hostname import CertificateError, match_hostname  # type: ignore
+from backports.ssl_match_hostname import match_hostname  # type: ignore
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
-import pandas as pd
+
 from core.utils import get_domain
 
 
@@ -22,6 +22,8 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     ----------
     url : AnyHttpUrl
         The url to be checked.
+    debug : bool, optional
+        Whether to print debug statements, by default False
 
     Returns
     -------
@@ -38,16 +40,14 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
         return False
 
     # check SSL certificate
-    # try:
-    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     sslsock: ssl.SSLSocket = ssl.wrap_socket(
-    #         sock, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_NONE
-    #     )
-    #     match_hostname(sslsock.getpeercert(), domain)
-    # except (CertificateError, Exception):
-    #     if debug:
-    #         print("Certificate Error")
-    #     return True
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sslsock: ssl.SSLSocket = ssl.wrap_socket(sock, cert_reqs=ssl.CERT_REQUIRED)
+        match_hostname(sslsock.getpeercert(), domain)
+    except Exception as e:
+        if debug:
+            print(f"{e}: SOME SSL CRAP HAPPENED")
+        return True
 
     w: Any = whois.whois(domain)  # type: ignore
     creation_date: datetime = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date  # type: ignore
@@ -64,7 +64,7 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     return prediction[0] != "good"
 
 
-def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
+def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool = False) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -111,7 +111,7 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
     return True
 
 
-def get_confidence(news: str, debug: bool) -> int:
+def get_confidence(news: str, debug: bool = False) -> int:
     """
     get_confidence returns the confidence of the news being fake.
 
@@ -165,9 +165,7 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str:
         return url
 
 
-def get_top_google_results(
-    query: str, count: int = 5, debug: bool = False
-) -> list[AnyHttpUrl]:
+def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> list[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 
