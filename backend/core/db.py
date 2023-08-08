@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from schemas import Article, TextInputData
 
 
-def add_to_db(uri: str, data: Article, debug: bool) -> Article:
+def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -39,7 +39,10 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
 
 
 def fetch_from_db_if_exists(
-    uri: str, data: TextInputData, dtype: Literal["image", "text"], debug: bool
+    uri: str,
+    data: TextInputData,
+    dtype: Literal["image", "text"],
+    debug: bool = False,
 ) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.

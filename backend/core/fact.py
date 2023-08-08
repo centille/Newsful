@@ -5,25 +5,16 @@ from io import StringIO
 from json import load
 from pprint import pprint
 from typing import List, Literal
-from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
-from core.preprocessors import is_government_related
 
 from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
 from langchain.llms import OpenAI
 from langchain.tools import BaseTool
 
 from core.db import add_to_db, fetch_from_db_if_exists
+from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
+from core.preprocessors import is_government_related
 from schemas import FactCheckResponse, TextInputData
 from schemas.Article import Article
-
-
-class YouIdiotException(Exception):
-    """You idiot."""
-
-    def __init__(self, message: str) -> None:
-        """Initialize."""
-        self.message: str = message
-        super().__init__("You idiot! " + self.message)
 
 
 def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
@@ -42,8 +33,6 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     FactCheckResponse
         The result of the fact check.
     """
-    if data.content == "":
-        raise YouIdiotException("No content was provided.")
     llm = OpenAI(
         max_tokens=200,
         temperature=0,
