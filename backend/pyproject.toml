@@ -27,6 +27,7 @@ scipy = "1.10.0"
 deep-translator = "^1.11.4"
 pytesseract = "^0.3.10"
 backports-ssl-match-hostname = "^3.7.0.1"
+whois = "^0.9.27"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

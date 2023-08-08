@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, validator
+from pydantic import AnyHttpUrl, BaseModel, validator  # type: ignore
 
 
 class Article(BaseModel):
@@ -18,6 +18,7 @@ class Article(BaseModel):
     isPhishing: Optional[bool] = False
     isCredible: Optional[bool] = False
     updatedAt: float = datetime.utcnow().timestamp()
+    isGovernmentRelated: Optional[bool] = False
 
     @validator("confidence")
     def check_confidence(cls, v: int) -> int:

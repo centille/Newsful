@@ -1,6 +1,10 @@
 import pickle
+import socket
+import ssl
+from datetime import datetime
 from typing import Any, Dict, List
 
+import whois  # type: ignore
 from backports.ssl_match_hostname import CertificateError, match_hostname  # type: ignore
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
@@ -29,15 +33,29 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     if debug:
         print(f"Prediction: {prediction[0]}")
 
+    domain: str = get_domain(url)
+    if debug:
+        print(f"Domain: {domain}")
+
     # check SSL certificate
     try:
-        match_hostname({"subjectAltName": [("DNS", url)]}, url)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sslsock: ssl.SSLSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_NONE)
+        match_hostname(sslsock.getpeercert(), domain)
     except CertificateError:
         if debug:
             print("Certificate Error")
         return True
 
-    return not (prediction[0] == "good")
+    w: Any = whois.whois(domain)  # type: ignore
+    creation_date: datetime = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date  # type: ignore
+    if creation_date:
+        today: datetime = datetime.today()
+        if isinstance(creation_date, datetime):
+            if (today - creation_date).days < 365:
+                return True
+
+    return prediction[0] != "good"
 
 
 def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
@@ -83,7 +101,7 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
     return True
 
 
-def get_confidence(news: str, debug: bool = False) -> int:
+def get_confidence(news: str, debug: bool) -> int:
     """
     get_confidence returns the confidence of the news being fake.
 
@@ -160,5 +178,5 @@ def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> l
     if debug:
         print(f"Top {count} Google Search Results:")
         for i, link in enumerate(result_links, start=1):
-            print(f"{i}. {link}")
+            print(f"{i}) {link}")
     return result_links

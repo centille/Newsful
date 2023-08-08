@@ -16,7 +16,7 @@ load_dotenv()
 # Suppress warnings
 warnings.filterwarnings("ignore")
 # Global variables
-DEBUG: bool = True
+DEBUG: bool = str(os.environ.get("DEBUG")) == "True"
 URI: str = str(os.environ.get("URI"))
 
 # FastAPI app
@@ -76,7 +76,7 @@ def image_check(data: ImageInputData) -> Article:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
-    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"  # type: ignore
 
     image = get_image(data.picture_url)
     res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore

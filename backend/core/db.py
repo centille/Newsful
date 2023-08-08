@@ -3,7 +3,6 @@ from typing import Any, Literal, Tuple
 from pydantic import AnyHttpUrl
 from pymongo import MongoClient
 
-from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
 from schemas import Article, TextInputData
 
 
@@ -25,15 +24,6 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
     Article
         The data that was added to the database.
     """
-
-    data.confidence = get_confidence(data.summary, debug=debug)
-    data.references = get_top_google_results(data.summary, debug=debug)
-    data.isPhishing = is_phishing(data.url, debug=debug)
-    data.isCredible = is_credible(data.url, debug=debug)
-
-    # Archive URL is news is false
-    if not data.label:
-        data.archive = archiveURL(data.url, debug=debug)
 
     # Print object being added to DB
     if debug:
