@@ -3,6 +3,10 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="script-src 'self' 'unsafe-inline';"
+        />
         <title>Newsful</title>
         <!-- <link rel="stylesheet" href="./style.css"> -->
         <link
@@ -11,11 +15,103 @@
             integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
             crossorigin="anonymous"
         />
+        <script src="./plotly.js"></script>
+        <!-- <script>
+            function generateRandomNonce(length) {
+                const charset =
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                let result = "";
+
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(
+                        Math.random() * charset.length
+                    );
+                    result += charset.charAt(randomIndex);
+                }
+
+                return result;
+            }
+
+            const nonce = generateRandomNonce(10);
+        </script> -->
     </head>
 
     <body>
         <script src="./popup.js"></script>
         <div id="loading">LOADING...</div>
         <div id="result"></div>
+        <div id="configraph">
+            <p>Hello</p>
+        </div>
+        <script>
+            var layout = {
+                width: 400,
+                height: 400,
+                annotations: [
+                    {
+                        x: 0.5,
+                        y: 0.5,
+                        text: "", // No Initial value text
+                        showarrow: false,
+                        font: { size: 20 },
+                    },
+                ],
+                xaxis: {
+                    showticklabels: true,
+                    showgrid: false,
+                    zeroline: false,
+                    tickvals: [0, 100],
+                    ticktext: ["0", "100"],
+                },
+                yaxis: {
+                    showticklabels: false,
+                    showgrid: false,
+                    zeroline: false,
+                },
+            };
+
+            var currentValue = 0;
+            var targetValue = 50;
+            var step = 1;
+            var intervalDuration = 50;
+
+            function createGaugeChart(color) {
+                var data = [
+                    {
+                        domain: { x: [0, 1], y: [0, 1] },
+                        value: currentValue,
+                        type: "indicator",
+                        mode: "gauge+number",
+                        delta: { reference: 400 },
+                        gauge: {
+                            axis: { range: [0, 100] },
+                            steps: [{ range: [0, 100], color: color }],
+                            threshold: {
+                                line: { color: "rgb(255, 0, 0)", width: 4 },
+                                thickness: 0.75,
+                                value: 100,
+                            },
+                        },
+                    },
+                ];
+
+                var plot = Plotly.newPlot("configraph", data, layout);
+                return plot;
+            }
+
+            function simulateTransition() {
+                if (currentValue <= targetValue) {
+                    var colorValue = Math.min(currentValue * 2.55, 100);
+                    createGaugeChart(
+                        "rgb(" + colorValue + ", " + (100 - colorValue) + ", 0)"
+                    );
+                    layout.annotations[0].text = "";
+                    currentValue += step;
+                    setTimeout(simulateTransition, intervalDuration);
+                }
+            }
+
+            simulateTransition();
+        </script>
     </body>
 </html>
