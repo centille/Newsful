@@ -2,6 +2,7 @@ from io import BytesIO
 from urllib.parse import urlparse
 
 import requests
+from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator  # type: ignore
 from PIL import Image
 from pydantic import AnyHttpUrl
@@ -108,3 +109,14 @@ def get_image(image_url: str):
         image_content: bytes = response.content
         return Image.open(BytesIO(image_content))
     raise Exception(f"Failed to fetch image: {response.status_code}")
+
+
+def extract_text_from_url(url: str) -> str:
+    try:
+        response: requests.Response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        text: str = soup.get_text()
+        return text
+    except requests.exceptions.RequestException:
+        return ""

@@ -3008,6 +3008,16 @@ urllib3 = "*"
 dev = ["black", "codecov", "flake8", "mypy", "pytest", "pytest-cov", "setuptools (>=46.4.0)", "types-requests"]
 
 [[package]]
+name = "whois"
+version = "0.9.27"
+description = "Python package for retrieving WHOIS information of domains."
+optional = false
+python-versions = "*"
+files = [
+    {file = "whois-0.9.27.tar.gz", hash = "sha256:57a2c3edce163b0313849d4014005111a315090f69f56918f93addd570302f45"},
+]
+
+[[package]]
 name = "yarl"
 version = "1.9.2"
 description = "Yet another URL library"
@@ -3097,4 +3107,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "3677b53db2233e0671fdf561dc46b2018898e99adc3b7d409274ab5c980ff788"
+content-hash = "841320298081909cacc011da75d37fef4386069875f720b034030eee91a49107"
