@@ -1,5 +1,4 @@
-from random import randrange
-from typing import Any, Tuple
+from typing import Any, Literal, Tuple
 
 from pydantic import AnyHttpUrl
 from pymongo import MongoClient
@@ -18,6 +17,8 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         The connection string to the MongoDB database.
     data : Article
         The data to be added to the database.
+    debug : bool
+        Whether to print debug statements or not.
 
     Returns
     -------
@@ -25,40 +26,31 @@ def add_to_db(uri: str, data: Article, debug: bool) -> Article:
         The data that was added to the database.
     """
 
-    db_data = Article(
-        url=data.url,
-        summary=data.summary,
-        response=data.response,
-        label=data.label,
-        archive=data.url,
-        confidence=get_confidence(data.summary, debug=debug),
-        references=get_top_google_results(data.summary, debug=debug),
-        isPhishing=is_phishing(data.url, debug=debug),
-        isCredible=is_credible(data.url, debug=debug),
-    )
-
-    # clean confidence
-    if db_data.confidence is None:
-        db_data.confidence = randrange(70, 90)
+    data.confidence = get_confidence(data.summary, debug=debug)
+    data.references = get_top_google_results(data.summary, debug=debug)
+    data.isPhishing = is_phishing(data.url, debug=debug)
+    data.isCredible = is_credible(data.url, debug=debug)
 
     # Archive URL is news is false
-    if not db_data.label:
-        db_data.archive = archiveURL(db_data.url, debug=debug)
+    if not data.label:
+        data.archive = archiveURL(data.url, debug=debug)
 
     # Print object being added to DB
     if debug:
         print("Adding to database:")
-        print(db_data)
+        print(data)
 
     # Add object to DB
     client = MongoClient(uri)  # type: ignore
     collection = client["NewsFul"]["articles"]  # type: ignore
-    collection.insert_one(dict(db_data))  # type: ignore
+    collection.insert_one(dict(data))  # type: ignore
     client.close()
-    return db_data
+    return data
 
 
-def fetch_from_db_if_exists(uri: str, data: TextInputData, debug: bool) -> Tuple[Article, bool]:
+def fetch_from_db_if_exists(
+    uri: str, data: TextInputData, dtype: Literal["image", "text"], debug: bool
+) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
 
@@ -87,20 +79,16 @@ def fetch_from_db_if_exists(uri: str, data: TextInputData, debug: bool) -> Tuple
         raise Exception("No connection to database")
 
     # fetch from database if exists
-    res: dict[str, Any] = collection.find_one({"url": url, "summary": summary})  # type: ignore
+    res: dict[str, Any] | None = collection.find_one({"url": url, "summary": summary})  # type: ignore
     client.close()
 
-    if res:
+    if res is not None:
         if debug:
             print("Found in database")
-        return Article(**res), True
+        return Article(**res), True  # type: ignore
 
     if debug:
         print("Not found in database")
-    result = Article(
-        url=url,
-        summary=summary,
-        response="",
-    )
+    result = Article(url=url, summary=summary, response="", dataType=dtype)
 
     return result, False

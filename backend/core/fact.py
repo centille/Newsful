@@ -4,7 +4,7 @@ from datetime import datetime
 from io import StringIO
 from json import load
 from pprint import pprint
-from typing import List
+from typing import List, Literal
 
 from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
 from langchain.llms import OpenAI
@@ -88,7 +88,7 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     return FactCheckResponse(**load(StringIO(response)))
 
 
-def fact_check_process(text_data: TextInputData, URI: str, DEBUG: bool) -> Article:
+def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image", "text"], DEBUG: bool) -> Article:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -100,13 +100,15 @@ def fact_check_process(text_data: TextInputData, URI: str, DEBUG: bool) -> Artic
         The URI of the article.
     DEBUG : bool
         Whether to print debug statements or not.
+    dtype : Literal["image", "text"]
+        The type of data to be checked.
 
     Returns
     -------
     Article
         The result of the fact check.
     """
-    fact_check, exists = fetch_from_db_if_exists(URI, text_data, DEBUG)
+    fact_check, exists = fetch_from_db_if_exists(URI, text_data, dtype, DEBUG)
     if exists:
         if DEBUG:
             print("Found in DB:")

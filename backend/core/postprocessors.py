@@ -1,10 +1,7 @@
 import pickle
-from datetime import datetime
 from typing import Any, Dict, List
 
-import pandas as pd
-import requests
-from bs4 import BeautifulSoup, ResultSet
+from backports.ssl_match_hostname import CertificateError, match_hostname  # type: ignore
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
@@ -31,10 +28,19 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     prediction: str = model.predict([url])
     if debug:
         print(f"Prediction: {prediction[0]}")
-    return prediction[0] == "good"
+
+    # check SSL certificate
+    try:
+        match_hostname({"subjectAltName": [("DNS", url)]}, url)
+    except CertificateError:
+        if debug:
+            print("Certificate Error")
+        return True
+
+    return not (prediction[0] == "good")
 
 
-def is_credible(url: AnyHttpUrl, debug: bool) -> bool:
+def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -54,46 +60,27 @@ def is_credible(url: AnyHttpUrl, debug: bool) -> bool:
     - https://www.thoughtco.com/gauging-website-reliability-2073838
     """
 
-    if url.startswith("http://"):
+    domain: str = get_domain(url)
+    if debug:
+        print(f"Domain: {domain}")
+
+    if not url.startswith("https://"):
         if debug:
-            print("URL starts with http://")
+            print("URL isn't HTTPS")
         return False
 
-    domain: str = get_domain(url)
-    domain_without_subdomain: str = ".".join(domain.split(".")[-2:])
-    req: requests.Response = requests.get(f"https://who.is/whois/{domain_without_subdomain}")
-    if req.status_code == 200:
-        soup = BeautifulSoup(req.text, "html.parser")
-        registry_data: ResultSet[Any] = soup.find_all("div", {"class": "row queryResponseBodyRow"})
-        if len(registry_data) > 0:
-            for i in registry_data:
-                i_resp = i.find("div", {"class": "col-md-4 queryResponseBodyKey"})
-                if i_resp is not None and i_resp.text == "Registered On":
-                    date_str: str = i.find("div", {"class": "col-md-8 queryResponseBodyValue"}).text
-                    date: datetime = datetime.strptime(date_str, "%Y-%m-%d")
-                    # if domain is registered in past 500 days, it is not credible
-                    if (datetime.now() - date).days < 500:
-                        if debug:
-                            print(f"Domain registered on {date_str}")
-                        return False
-
-    safe_tlds: list[str] = [".com", ".gov", ".org", ".edu", ".gov.in"]
+    safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
         if debug:
             print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
 
-    unsafe_tlds: list[str] = [".info", ".biz", ".online", ".site"]
-    if any(domain.endswith(tld) for tld in unsafe_tlds):
+    if is_phishing:
         if debug:
-            print(f"Domain ends with {' or '.join(unsafe_tlds)}")
+            print(f"{domain} is a phishing URL")
         return False
 
-    unreliable_domains: list[str] = pd.read_parquet("./data/sources.parquet")["domain"].tolist()
-    res: bool = domain not in unreliable_domains
-    if debug:
-        print(f"Domain not in unreliable domains: {res}")
-    return res
+    return True
 
 
 def get_confidence(news: str, debug: bool = False) -> int:
