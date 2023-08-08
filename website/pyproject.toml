@@ -13,6 +13,8 @@ pymongo = "^4.4.1"
 python-dotenv = "^1.0.0"
 pydantic = "^2.1.1"
 matplotlib = "^3.7.2"
+streamlit-aggrid = "^0.3.4.post3"
+plotly = "^5.15.0"
 
 
 [tool.poetry.group.dev.dependencies]
