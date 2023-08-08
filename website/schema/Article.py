@@ -1,4 +1,5 @@
-from pydantic import AnyHttpUrl, BaseModel, field_validator
+from typing import Literal, TypedDict
+from pydantic import AnyHttpUrl, BaseModel
 
 
 class Article(BaseModel):
@@ -6,16 +7,45 @@ class Article(BaseModel):
     archive: str
     summary: str
     response: str
-    label: bool | str
+    label: bool
     confidence: int
     references: list[AnyHttpUrl]
     isPhishing: bool
     isCredible: bool
+    isGovernmentRelated: bool
+    dataType: Literal["text", "image"]
+    updatedAt: float
 
-    @field_validator("label")
-    def change_to_bool(cls, v: bool | str) -> bool:
-        if isinstance(v, str):
-            if v.lower() == "fake":
-                return False
-            return True
-        return v
+    def display_dict(self):
+        return DisplayDict(
+            url=str(self.url),
+            label=self.label,
+            isPhishing=self.isPhishing,
+            isCredible=self.isCredible,
+            isGovernmentRelated=self.isGovernmentRelated,
+            dataType=self.dataType,
+        )
+
+
+class ArticleDict(TypedDict):
+    url: AnyHttpUrl
+    archive: str
+    summary: str
+    response: str
+    label: bool
+    confidence: int
+    references: list[AnyHttpUrl]
+    isPhishing: bool
+    isCredible: bool
+    isGovernmentRelated: bool
+    dataType: Literal["text", "image"]
+    updatedAt: float
+
+
+class DisplayDict(TypedDict):
+    url: str
+    label: bool
+    isPhishing: bool
+    isCredible: bool
+    isGovernmentRelated: bool
+    dataType: Literal["text", "image"]

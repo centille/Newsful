@@ -1,0 +1,11 @@
+[theme]
+base = "dark"
+primaryColor = "#4b4bff"
+
+[browser]
+gatherUsageStats = true
+
+[server]
+runOnSave = true
+enableCORS = true
+enableXsrfProtection = true
