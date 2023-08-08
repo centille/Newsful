@@ -1,8 +1,9 @@
+from io import BytesIO
+
+import requests
 from deep_translator import GoogleTranslator  # type: ignore
 from PIL import Image
 from summarizer import Summarizer  # type: ignore
-import requests
-from io import BytesIO
 
 from core.utils import tokenize
 
@@ -49,6 +50,19 @@ def summarize(text: str) -> str:
 
 
 def is_government_related(text: str) -> bool:
+    """
+    is_government_related checks if the text is related to the government.
+
+    Parameters
+    ----------
+    text : str
+        The text to be checked.
+
+    Returns
+    -------
+    bool
+        True if the text is related to the government, False otherwise.
+    """
     words: list[str] = tokenize(text)
     gov_rel_words: list[str] = ["india", "government", "indian"]
     for word in words:
