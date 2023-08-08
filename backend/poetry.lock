@@ -703,6 +703,16 @@ ssh = ["paramiko"]
 tqdm = ["tqdm"]
 
 [[package]]
+name = "future"
+version = "0.18.3"
+description = "Clean single-source support for Python 3 and 2"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "future-0.18.3.tar.gz", hash = "sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307"},
+]
+
+[[package]]
 name = "google-api-core"
 version = "2.11.1"
 description = "Google API client core library"
@@ -1922,6 +1932,22 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "python-whois"
+version = "0.8.0"
+description = "Whois querying and parsing of domain registration information."
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-whois-0.8.0.tar.gz", hash = "sha256:dd336d3517eace2a7689406db7bb96ada3c5e74327423151aeee3e64225f6220"},
+]
+
+[package.dependencies]
+future = "*"
+
+[package.extras]
+"better date conversion" = ["python-dateutil"]
+
+[[package]]
 name = "pytz"
 version = "2023.3"
 description = "World timezone definitions, modern and historical"
@@ -2999,16 +3025,6 @@ urllib3 = "*"
 dev = ["black", "codecov", "flake8", "mypy", "pytest", "pytest-cov", "setuptools (>=46.4.0)", "types-requests"]
 
 [[package]]
-name = "whois"
-version = "0.9.27"
-description = "Python package for retrieving WHOIS information of domains."
-optional = false
-python-versions = "*"
-files = [
-    {file = "whois-0.9.27.tar.gz", hash = "sha256:57a2c3edce163b0313849d4014005111a315090f69f56918f93addd570302f45"},
-]
-
-[[package]]
 name = "yarl"
 version = "1.9.2"
 description = "Yet another URL library"
@@ -3098,4 +3114,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "841320298081909cacc011da75d37fef4386069875f720b034030eee91a49107"
+content-hash = "6edcd8e8bb035bf4b5ae512bfd0da00615440f6f7ca65aacff2dca41a70f461d"
