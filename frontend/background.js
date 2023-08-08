@@ -51,6 +51,21 @@ chrome.runtime.onMessage.addListener(
                 .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
                 .catch(error => console.error(error));
         }
+        // Store the responses of the user to display in the widget
+        else if (message.action === "storeResponse") {
+            chrome.runtime.sendMessage({ action: "check", data: { test: "test" } });
+            chrome.storage.local.get(["searches"], function (result) {
+                if (result.hasOwnProperty("searches")) {
+                    const existing = result.searches;
+                    existing.push(message.data);
+                    chrome.storage.local.set({ searches: existing });
+                } else {
+                    const fresh = [];
+                    fresh.push(message.data);
+                    chrome.storage.local.set({ searches: fresh });
+                }
+            });
+        }
     }
 );
 

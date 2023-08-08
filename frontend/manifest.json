@@ -3,10 +3,10 @@
   "name": "Newsful",
   "description": "Newsful - Trusted and Useful",
   "version": "1.0",
-  "permissions": ["activeTab", "tabs", "runtime", "contextMenus", "windows"],
+  "permissions": ["activeTab", "tabs", "contextMenus", "windows", "storage"],
   "browser_action": {
     "default_title": "Newsful",
-    "default_popup": "./popup.html"
+    "default_popup": "./widget.html"
   },
   "background": {
     "scripts": ["./background.js"]
@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["./popup.js"]
+      "js": ["./popup.js", "./widget.js"]
     }
   ]
 }
