@@ -57,7 +57,7 @@ def summarize_text(text: str) -> dict[str, str]:
     """Endpoint to summarize a news article."""
     summary: str = summarize(text)
     if DEBUG:
-        pprint(summary, width=120)
+        pprint(summary)
     return {"summary": summary}
 
 
@@ -66,7 +66,9 @@ async def verify_news(data: TextInputData) -> Article:
     """Endpoint to verify a news article."""
 
     data.content = summarize(to_english(data.content))
-    return fact_check_process(data, URI, DEBUG)
+    if DEBUG:
+        pprint(dict(data))
+    return fact_check_process(data, URI, "text", DEBUG)
 
 
 @app.post("/api/verify/image/")
@@ -74,15 +76,15 @@ def image_check(data: ImageInputData) -> Article:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
     image = get_image(data.picture_url)
-    res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)
+    res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
     if not isinstance(res, (str, bytes)):
         raise Exception("Unable to read image.")
     text: str = res if isinstance(res, str) else str(res)
     if DEBUG:
-        print(f"{text=}")  # type: ignore
+        print(f"{text=}")
 
     text_data = TextInputData(
         url=data.url,
@@ -90,4 +92,4 @@ def image_check(data: ImageInputData) -> Article:
     )
 
     pprint(dict(text_data))
-    return fact_check_process(text_data, URI, DEBUG)
+    return fact_check_process(text_data, URI, "image", DEBUG)

@@ -173,6 +173,16 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "backports-ssl-match-hostname"
+version = "3.7.0.1"
+description = "The ssl.match_hostname() function from Python 3.5"
+optional = false
+python-versions = "*"
+files = [
+    {file = "backports.ssl_match_hostname-3.7.0.1.tar.gz", hash = "sha256:bb82e60f9fbf4c080eabd957c39f0641f0fc247d9a16e31e26d594d8f42b9fd2"},
+]
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.12.2"
 description = "Screen-scraping library"
@@ -3087,4 +3097,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "00510f0f2073a17a817dbe69d85d8d0a4a69f5736cc9122d9b35650d3cc72afd"
+content-hash = "3677b53db2233e0671fdf561dc46b2018898e99adc3b7d409274ab5c980ff788"

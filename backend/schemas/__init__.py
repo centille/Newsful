@@ -1,5 +1,7 @@
-from schemas.Article import Article  # type: ignore
-from schemas.FactCheckResponse import FactCheckResponse  # type: ignore
-from schemas.Health import Health  # type: ignore
-from schemas.ImageInputData import ImageInputData  # type: ignore
-from schemas.TextInputData import TextInputData  # type: ignore
+# Full Path: app\schemas\__init__.py
+# type: ignore
+from schemas.Article import Article
+from schemas.FactCheckResponse import FactCheckResponse
+from schemas.Health import Health
+from schemas.ImageInputData import ImageInputData
+from schemas.TextInputData import TextInputData
