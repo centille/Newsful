@@ -1,7 +1,7 @@
 // Create a menu Item in the right click context menu of the browser
 chrome.contextMenus.create({
     id: "extractText",
-    title: "Search selected text with Newsful",
+    title: "Verify with NewsFul",
     contexts: ["all"]
 });
 

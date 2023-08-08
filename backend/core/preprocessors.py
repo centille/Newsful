@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 
 from core.utils import tokenize
+from core.utils import clean_text
 
 
 def to_english(text: str) -> str:  # type: ignore

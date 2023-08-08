@@ -18,7 +18,13 @@ def clean_text(text: str) -> str:
     str
         The optimized text.
     """
-    return text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ").rstrip(".")
+    return (
+        text.strip()
+        .replace("\n", " ")
+        .replace("\t", " ")
+        .replace("\r", " ")
+        .rstrip(".")
+    )
 
 
 def tokenize(text: str) -> list[str]:

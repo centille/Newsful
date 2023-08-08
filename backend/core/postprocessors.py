@@ -4,6 +4,7 @@ import ssl
 from datetime import datetime
 from typing import Any, Dict, List
 
+from core.utils import clean_text
 import whois  # type: ignore
 from backports.ssl_match_hostname import CertificateError, match_hostname  # type: ignore
 from langchain import GoogleSearchAPIWrapper
@@ -32,15 +33,21 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     if debug:
         print(f"Domain: {domain}")
 
+    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    if domain in websites:
+        return False
+
     # check SSL certificate
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sslsock: ssl.SSLSocket = ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_NONE)
-        match_hostname(sslsock.getpeercert(), domain)
-    except CertificateError:
-        if debug:
-            print("Certificate Error")
-        return True
+    # try:
+    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #     sslsock: ssl.SSLSocket = ssl.wrap_socket(
+    #         sock, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_NONE
+    #     )
+    #     match_hostname(sslsock.getpeercert(), domain)
+    # except (CertificateError, Exception):
+    #     if debug:
+    #         print("Certificate Error")
+    #     return True
 
     w: Any = whois.whois(domain)  # type: ignore
     creation_date: datetime = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date  # type: ignore
@@ -49,10 +56,6 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
         if isinstance(creation_date, datetime):
             if (today - creation_date).days < 365:
                 return True
-
-    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
-    if domain in websites:
-        return False
 
     model = pickle.load(open("./models/model.pickle", "rb"))
     prediction: str = model.predict([url])
@@ -162,7 +165,9 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str:
         return url
 
 
-def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> list[AnyHttpUrl]:
+def get_top_google_results(
+    query: str, count: int = 5, debug: bool = False
+) -> list[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 

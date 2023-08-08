@@ -23,7 +23,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
         // Use Tailwind CSS to style the popup
         let result_display = `
-            <div>
             <section class="h-100 h-custom" style="background-color: #eee">
               <div class="container py-5 h-100">
                 <div
@@ -35,23 +34,19 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                       style="border-color: #1da1f2 !important"
                     >
                       <div class="card-body p-5">
-                        <a class="list-inline-item align-items-center">
-                          <blockquote class="blockquote text-center">
-                            <h3
-                              class="mx-lg-5 px-6"
-                              style="align-items: center; color: #1d64f2"
-                            >
-                              Newsful Report
-                            </h3>
-                          </blockquote>
+                        <div class="text-center">
+                        <div style="background-color: #1da1f2; padding: 10px;">
+                            <h3 class="mx-lg-5 px-5" style="color: #f2f2f2;">Newsful Report</h3>
+                          </div>
+                        </div>
                         </a>
                         <br /><br />
                         <div class="row">
                           <div class="col mb-2">
                             <a class="list-inline-item align-items-end">
                               <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
+                                class="py-1 font-weight-bold"
+                                style="color:#1da1f2"
                               >
                                 Label
                               </p>
@@ -61,10 +56,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                           <div class="col mb-2">
                             <a class="list-inline-item align-items-end">
                               <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
+                              class="py-1 font-weight-bold"
+                              style="color:#1da1f2"
                               >
-                                Authenticity
+                                Confidence
                               </p>
                             </a>
                             <p class="large text-success l-lg-3">${data.confidence}%</p>
@@ -78,8 +73,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                             <div class="col-md-8 col-md-4">
                               <a class="list-inline-item align-items-end">
                                 <p
-                                  class="py-1 px-3 rounded text-white"
-                                  style="background-color: #1da1f2"
+                                class="py-1 font-weight-bold"
+                                style="color:#1da1f2"
                                 >
                                   Response
                                 </p>
@@ -92,8 +87,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                           <div>
                             <a class="list-inline-item align-items-end">
                               <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
+                              class="py-1 font-weight-bold"
+                              style="color:#1da1f2"
                               >
                                 Archive
                               </p>
@@ -112,8 +107,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                               <div class="col-md-8 col-md-4">
                                 <a class="list-inline-item align-items-end">
                                   <p
-                                    class="py-1 px-3 rounded text-white"
-                                    style="background-color: #1da1f2"
+                                  class="py-1 font-weight-bold"
+                                  style="color:#1da1f2"
                                   >
                                     References
                                   </p>
@@ -144,34 +139,29 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                     <div class="col mb-2">
                         <a class="list-inline-item align-items-end">
                             <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
+                            class="py-1 font-weight-bold"
+                            style="color:#1da1f2"
                             >
                                 Phishing Detection
                             </p>
                         </a>
-                        ${data.isPhishing ? "<p class='large text-danger l-lg-3'>  YES</p>" : "<p class='large text-success l-lg-3'><img src='https://clipart-library.com/new_gallery/2-21271_icons8-flat-checkmark-check-mark-thin-green.png' alt='Green Tick' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'>  NO</p>"}
+                        ${data.isPhishing ? "<p class='large text-danger l-lg-3'><img src='https://www.nicepng.com/png/detail/47-479473_red-check-mark-png-clip-freeuse-library-red.png' alt='Green Tick' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'> YES</p>" : "<p class='large text-success l-lg-3'><img src='https://www.seekpng.com/png/detail/442-4423412_x-mark-multiplications-sign.png' alt='Green Cross' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'>  NO</p>"}
                     </div>
                     <div class="col mb-2">
                         <a class="list-inline-item align-items-end">
                             <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
+                            class="py-1 font-weight-bold"
+                            style="color:#1da1f2"
                             >
                                 Credibility
                             </p>
                         </a>
-                        ${data.isCredible ? "<p class='large text-success l-lg-3'><img src='https://clipart-library.com/new_gallery/2-21271_icons8-flat-checkmark-check-mark-thin-green.png' alt='Green Tick' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'>  YES</p>" : "<p class='large text-danger l-lg-3'>  NO</p>"}
+                        ${data.isCredible ? "<p class='large text-success l-lg-3'><img src='https://clipart-library.com/new_gallery/2-21271_icons8-flat-checkmark-check-mark-thin-green.png' alt='Green Tick' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'>  YES</p>" : "<p class='large text-danger l-lg-3'><img src='https://freepngimg.com/thumb/red_cross/28029-3-red-cross-file.png' alt='Red Cross' style='width: 15px; height: 15px; color: rgb(17, 224, 17);'>  NO</p>"}
                     </div>
                     </div>
-                    <div>
+                    <div class="text-center pt-4">
                         <a class="list-inline-item align-items-end" href="${download(data)}" download="NewsFul_Report">
-                            <p
-                                class="py-1 px-3 rounded text-white"
-                                style="background-color: #1da1f2"
-                            >
-                            Download Report
-                            </p>
+                            <button type="button" class="btn text-white" style="background-color:#1da1f2">Download Report</button>
                         </a>
                     </div>
                         </div >
@@ -195,8 +185,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
               integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
               crossorigin="anonymous"
           ></script>
-            </section >
-          </div > `;
+            </section > `;
 
         // download(data);
         ele.innerHTML = result_display;
@@ -208,7 +197,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     }
 });
 
-const download = (jsonData) => {
+const download = async (jsonData) => {
     const formattedString =
         `URL:
     ${jsonData.url}
@@ -247,6 +236,16 @@ Updated At:
     let blob = new Blob([formattedString], { type: "text/plain" });
 
     return URL.createObjectURL(blob);
+
+    // const pdfBlob = await generatePDF(formattedString);
+
+    // return URL.createObjectURL(pdfBlob);
+    // const pdf = new jsPDF();
+    // pdf.text(formattedString, 10, 10);
+
+    // const pdfBlob = pdf.output("blob");
+
+    // return URL.createObjectURL(pdfBlob);
 }
 
 
