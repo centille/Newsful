@@ -23,9 +23,9 @@ def to_english(text: str) -> str:  # type: ignore
     str
         The text translated to english.
     """
-    translator: GoogleTranslator = GoogleTranslator(source="auto", target="en")
+    translator: GoogleTranslator = GoogleTranslator(source="auto", target="en")  # type: ignore
     text: str = translator.translate(text)  # type: ignore
-    return clean_text(text)
+    return clean_text(text)  # type: ignore
 
 
 def get_domain(url: AnyHttpUrl) -> str:
