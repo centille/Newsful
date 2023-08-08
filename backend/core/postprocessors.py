@@ -101,7 +101,7 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
     return True
 
 
-def get_confidence(news: str, debug: bool = False) -> int:
+def get_confidence(news: str, debug: bool) -> int:
     """
     get_confidence returns the confidence of the news being fake.
 
@@ -178,5 +178,5 @@ def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> l
     if debug:
         print(f"Top {count} Google Search Results:")
         for i, link in enumerate(result_links, start=1):
-            print(f"{i}. {link}")
+            print(f"{i}) {link}")
     return result_links

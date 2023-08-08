@@ -5,6 +5,8 @@ from io import StringIO
 from json import load
 from pprint import pprint
 from typing import List, Literal
+from core.postprocessors import archiveURL, get_confidence, get_top_google_results, is_credible, is_phishing
+from core.preprocessors import is_government_related
 
 from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
 from langchain.llms import OpenAI
@@ -98,10 +100,10 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
         The data to be checked.
     URI : str
         The URI of the article.
-    DEBUG : bool
-        Whether to print debug statements or not.
     dtype : Literal["image", "text"]
         The type of data to be checked.
+    DEBUG : bool
+        Whether to print debug statements or not.
 
     Returns
     -------
@@ -125,6 +127,15 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
     # assign to right variable
     fact_check.label = fact_check_resp.label
     fact_check.response = fact_check_resp.response
+    fact_check.isGovernmentRelated = is_government_related(text_data.content)
+    fact_check.confidence = get_confidence(fact_check.summary, DEBUG)
+    fact_check.references = get_top_google_results(fact_check.summary, DEBUG)
+    fact_check.isPhishing = is_phishing(fact_check.url, DEBUG)
+    fact_check.isCredible = is_credible(fact_check.url, fact_check.isPhishing, DEBUG)
+
+    # Archive URL is news is false
+    if not fact_check.label:
+        fact_check.archive = archiveURL(fact_check.url, DEBUG)
 
     fact_check: Article = add_to_db(URI, fact_check, DEBUG)
 
@@ -133,7 +144,7 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
         if not os.path.exists("./output"):
             os.mkdir("./output")
 
-        file: str = f"./output/{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.json"
+        file: str = f"./output/{str(datetime.now().timestamp()).replace('.', '-')}.json"
         fact_check_dict = dict(fact_check)
         pprint(fact_check_dict, width=120)
         json.dump(fact_check_dict, open(file, mode="w+"), indent=4)

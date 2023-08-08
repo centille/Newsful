@@ -1,4 +1,4 @@
-from pydantic import AnyHttpUrl, BaseModel, validator
+from pydantic import AnyHttpUrl, BaseModel, validator  # type: ignore
 
 
 class TextInputData(BaseModel):
