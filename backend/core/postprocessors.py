@@ -9,7 +9,7 @@ from backports.ssl_match_hostname import CertificateError, match_hostname  # typ
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
-
+import pandas as pd
 from core.utils import get_domain
 
 
@@ -27,11 +27,6 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     bool
         True if the url is a phishing url, False otherwise.
     """
-
-    model = pickle.load(open("./models/model.pickle", "rb"))
-    prediction: str = model.predict([url])
-    if debug:
-        print(f"Prediction: {prediction[0]}")
 
     domain: str = get_domain(url)
     if debug:
@@ -55,6 +50,14 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
             if (today - creation_date).days < 365:
                 return True
 
+    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    if domain in websites:
+        return False
+
+    model = pickle.load(open("./models/model.pickle", "rb"))
+    prediction: str = model.predict([url])
+    if debug:
+        print(f"Prediction: {prediction[0]}")
     return prediction[0] != "good"
 
 
@@ -81,6 +84,10 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, debug: bool) -> bool:
     domain: str = get_domain(url)
     if debug:
         print(f"Domain: {domain}")
+
+    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    if domain in websites:
+        return False
 
     if not url.startswith("https://"):
         if debug:
