@@ -85,9 +85,7 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     return FactCheckResponse(**load(StringIO(response)))
 
 
-def fact_check_process(
-    text_data: TextInputData, URI: str, dtype: Literal["image", "text"], DEBUG: bool
-) -> Article:
+def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image", "text"], DEBUG: bool) -> Article:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -198,14 +196,12 @@ def fact_check_this_chat(data: ChatTextInputData, DEBUG: bool) -> ChatReply:
     reply = ChatReply(label=True)  # type: ignore
     reply.label = fact_check.label
     reply.response = fact_check.response
-    reply.references = get_top_google_results(data.content, DEBUG)
+    reply.references = get_top_google_results(data.content, DEBUG=DEBUG)
 
     pprint(dict(reply), width=120)
     return reply
 
 
-def fact_check_chat(
-    text_data: ChatTextInputData, dtype: Literal["image", "text"], DEBUG: bool
-) -> ChatReply:
+def fact_check_chat(text_data: ChatTextInputData, dtype: Literal["image", "text"], DEBUG: bool) -> ChatReply:
     fact_check_response: ChatReply = fact_check_this_chat(text_data, DEBUG)
     return fact_check_response

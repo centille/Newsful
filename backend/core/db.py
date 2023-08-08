@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from schemas import Article, TextInputData
 
 
-def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
+def add_to_db(uri: str, data: Article, DEBUG: bool = False) -> Article:
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -16,7 +16,7 @@ def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
         The connection string to the MongoDB database.
     data : Article
         The data to be added to the database.
-    debug : bool
+    DEBUG : bool
         Whether to print debug statements or not.
 
     Returns
@@ -26,7 +26,7 @@ def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
     """
 
     # Print object being added to DB
-    if debug:
+    if DEBUG:
         print("Adding to database:")
         print(data)
 
@@ -42,7 +42,7 @@ def fetch_from_db_if_exists(
     uri: str,
     data: TextInputData,
     dtype: Literal["image", "text"],
-    debug: bool = False,
+    DEBUG: bool = False,
 ) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
@@ -76,11 +76,11 @@ def fetch_from_db_if_exists(
     client.close()
 
     if res is not None:
-        if debug:
+        if DEBUG:
             print("Found in database")
         return Article(**res), True  # type: ignore
 
-    if debug:
+    if DEBUG:
         print("Not found in database")
     result = Article(url=url, summary=summary, response="", dataType=dtype)
 

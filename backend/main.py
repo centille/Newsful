@@ -18,7 +18,6 @@ from schemas import (
     ImageInputData,
     TextInputData,
     ChatTextInputData,
-    FactCheckResponse,
     ChatReply,
 )
 
@@ -27,7 +26,7 @@ load_dotenv()
 # Suppress warnings
 warnings.filterwarnings("ignore")
 # Global variables
-DEBUG: bool = str(os.environ.get("DEBUG")) == "True"
+DEBUG: bool = True
 URI: str = str(os.environ.get("URI"))
 
 # FastAPI app
@@ -104,8 +103,7 @@ def image_check(data: ImageInputData) -> Article | bool:
         image_bytes = io.BytesIO()
         image.save(image_bytes, format="PNG")
         image_bytes = image_bytes.getvalue()
-        ela_result = image_is_true(image_bytes)
-        return ela_result
+        raise NotImplementedError("Image is not supported yet.")
     text_data = TextInputData(
         url=data.url,
         content=text,
