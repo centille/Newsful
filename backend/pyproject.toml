@@ -28,6 +28,7 @@ deep-translator = "^1.11.4"
 pytesseract = "^0.3.10"
 backports-ssl-match-hostname = "^3.7.0.1"
 python-whois = "^0.8.0"
+keras = "^2.13.1"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.12.0"

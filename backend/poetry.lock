@@ -997,6 +997,17 @@ files = [
 ]
 
 [[package]]
+name = "keras"
+version = "2.13.1"
+description = "Deep learning for humans."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "keras-2.13.1-py3-none-any.whl", hash = "sha256:5ce5f706f779fa7330e63632f327b75ce38144a120376b2ae1917c00fa6136af"},
+    {file = "keras-2.13.1.tar.gz", hash = "sha256:5df12cc241a015a11b65ddb452c0eeb2744fce21d9b54ba48db87492568ccc68"},
+]
+
+[[package]]
 name = "langchain"
 version = "0.0.239"
 description = "Building applications with LLMs through composability"
@@ -3114,4 +3125,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "6edcd8e8bb035bf4b5ae512bfd0da00615440f6f7ca65aacff2dca41a70f461d"
+content-hash = "e93449499e38fd2b7a2228a6da006f9bb2263f95f7d81aa21060b78c6fa527fa"
