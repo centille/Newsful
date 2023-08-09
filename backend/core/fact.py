@@ -15,8 +15,7 @@ from core.postprocessors import (
     archiveURL,
     get_confidence,
     get_top_google_results,
-    is_credible,
-    is_phishing,
+    is_safe,
 )
 from core.preprocessors import is_government_related
 from schemas import FactCheckResponse, TextInputData, ChatTextInputData, ChatReply
@@ -55,11 +54,11 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
     )
-    template = """. Is this news true or false?
+    template = """{content}. Is this news true or false?
         Without any comment, return the result in the following JSON format {"label": bool, "response": str}
     """
 
-    response: str = agent.run(data.content + template)
+    response: str = agent.run(template.format(content=data.content))
 
     if DEBUG:
         print("Raw response:")
@@ -125,8 +124,7 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
     fact_check.isGovernmentRelated = is_government_related(text_data.content)
     fact_check.confidence = get_confidence(fact_check.summary, DEBUG)
     fact_check.references = get_top_google_results(fact_check.summary, DEBUG)
-    fact_check.isPhishing = is_phishing(fact_check.url, DEBUG)
-    fact_check.isCredible = is_credible(fact_check.url, fact_check.isPhishing, DEBUG)
+    fact_check.isSafe = is_safe(fact_check.url, DEBUG)
 
     # Archive URL is news is false
     if not fact_check.label:

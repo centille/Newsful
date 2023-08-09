@@ -111,6 +111,25 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, DEBUG: bool = False) -> bool
     return True
 
 
+def is_safe(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
+    """
+    is_safe Checks is the URL is credible and not a phishing URL.
+
+    Parameters
+    ----------
+    url : AnyHttpUrl
+        The url to be checked.
+    DEBUG : bool, optional
+        Whether to print debug statements, by default False
+
+    Returns
+    -------
+    bool
+        True if the url is safe, False otherwise.
+    """
+    return not is_phishing(url, DEBUG) and is_credible(url, False, DEBUG)
+
+
 def get_confidence(news: str, DEBUG: bool = False) -> int:
     """
     get_confidence returns the confidence of the news being fake.

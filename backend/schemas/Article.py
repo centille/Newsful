@@ -15,8 +15,7 @@ class Article(BaseModel):
     label: Optional[bool] = False
     confidence: Optional[int] = 0
     references: Optional[list[AnyHttpUrl]] = []
-    isPhishing: Optional[bool] = False
-    isCredible: Optional[bool] = False
+    isSafe: Optional[bool] = False
     updatedAt: float = datetime.utcnow().timestamp()
     isGovernmentRelated: Optional[bool] = False
 
