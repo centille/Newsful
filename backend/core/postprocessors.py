@@ -5,8 +5,6 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import pandas as pd
-import whois  # type: ignore
-from backports.ssl_match_hostname import match_hostname  # type: ignore
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
@@ -39,24 +37,6 @@ def is_phishing(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     if domain in websites:
         return False
 
-    # check SSL certificate
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sslsock: ssl.SSLSocket = ssl.wrap_socket(sock, cert_reqs=ssl.CERT_REQUIRED)
-        match_hostname(sslsock.getpeercert(), domain)
-    except Exception as e:
-        if DEBUG:
-            print(f"{e}: SOME SSL CRAP HAPPENED")
-        return True
-
-    w: Any = whois.whois(domain)  # type: ignore
-    creation_date: datetime = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date  # type: ignore
-    if creation_date:
-        today: datetime = datetime.today()
-        if isinstance(creation_date, datetime):
-            if (today - creation_date).days < 365:
-                return True
-
     model = pickle.load(open("./models/model.pickle", "rb"))
     prediction: str = model.predict([url])
     if DEBUG:
@@ -64,7 +44,7 @@ def is_phishing(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     return prediction[0] != "good"
 
 
-def is_credible(url: AnyHttpUrl, is_phishing: bool, DEBUG: bool = False) -> bool:
+def is_credible(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -103,12 +83,7 @@ def is_credible(url: AnyHttpUrl, is_phishing: bool, DEBUG: bool = False) -> bool
             print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
 
-    if is_phishing:
-        if DEBUG:
-            print(f"{domain} is a phishing URL")
-        return False
-
-    return True
+    return is_phishing(url, DEBUG)
 
 
 def is_safe(url: AnyHttpUrl, DEBUG: bool = False) -> bool:

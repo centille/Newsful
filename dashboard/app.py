@@ -1,4 +1,5 @@
 import base64
+import numpy as np
 import plotly.express as px  # type: ignore
 import pymongo
 import streamlit as st
@@ -28,12 +29,12 @@ def put_gif(file_path: str, width: int):
 
 
 if "LOGIN" not in st.session_state or st.session_state["LOGIN"] is False:
-    st.title("Newsful", anchor="title")
+    st.title("Newsful", anchor="main_title")
     st.markdown(
         """
     <style>
-        #title {
-            font-size: 72px;
+        #main_title {
+            font-size: 48px;
             color: #4b4bf4;
             text-align: center;
         }
@@ -135,11 +136,10 @@ if "LOGIN" in st.session_state and st.session_state["LOGIN"] is True:
         articles: list[Article] = [Article(**article) for article in data]  # type: ignore
         return articles
 
-    st.header(f"Hello {st.session_state['USERNAME']}!")
-    st.subheader("Welcome to the Newsful Dashboard!")
+    st.subheader("Welcome to Newsful!")
 
-    st.write(  # type: ignore
-        "This is a dashboard to view the information stored in the DataBase of the Newsful project."
+    st.write(
+        "Empowering Truth in a Click : Your Browser's Fact-Check Companion for News Across Languages and Images."
     )
 
     data: list[Article] = get_data()
@@ -167,23 +167,72 @@ if "LOGIN" in st.session_state and st.session_state["LOGIN"] is True:
 
     st.divider()
 
+    st.header("Report")
+    st.write(
+        "The following data depicts the response from the fact check done by Newsful."
+    )
+    cellstyle_jscode = JsCode(
+        """
+        function(params) {
+            if (params.value == true) {
+                return {
+                    'color': 'green',
+                    'backgroundColor': 'lightgreen'
+                }
+            } else {
+                return {
+                    'color': 'red',
+                    'backgroundColor': 'pink'
+                }
+            }
+        };
+        """
+    )
+
+    def to_link(link: str) -> str:
+        return f"<a href='{link}' target='_BLANK'>{link}</a>"
+
+    df = pd.DataFrame(display_data)
+    # isSafe = not isPhishing and isCredible
+    df["Response"] = df["label"]
+    df["Credibility"] = ~df["isPhishing"] & df["isCredible"]
+    df["Data Type"] = df["dataType"]
+    # df["url"] = df["url"].map(to_link)
+    df.drop(columns=["isPhishing", "isCredible", "label", "dataType"], inplace=True)
+    gb = GridOptionsBuilder.from_dataframe(df)
+    # style rows
+    gb.configure_column("Response", cellStyle=cellstyle_jscode)
+    gb.configure_column("Credibility", cellStyle=cellstyle_jscode)
+    # configure grid
+    gb.configure_grid_options(domLayout="normal")
+    # add pagination
+    gb.configure_pagination(
+        enabled=True,
+        paginationAutoPageSize=False,
+        paginationPageSize=10,
+    )
+
+    gridOptions = gb.build()
+    AgGrid(
+        df,
+        gridOptions=gridOptions,
+        width="100%",
+        allow_unsafe_jscode=True,  # Set it to True to allow jsfunction to be injected
+    )
+
+    st.download_button(
+        label="Download Data as CSV",
+        data=df.to_csv().encode("utf-8"),
+        file_name="data.csv",
+        mime="text/csv",
+    )
+
+    st.divider()
+
     st.header("Daily Stats")
     st.write(
         f"These are the number of fact checks done on **{datetime.today().strftime('%d %B %Y')}**."
     )
-    with st.sidebar:
-        st.title("Newsful", anchor="sidebar-title")
-        st.markdown(
-            """
-            <style>
-                #sidebar-title {
-                    margin-top: 0;
-                    padding-top: 0;
-                }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
 
     st.plotly_chart(  # type: ignore
         px.pie(  # type: ignore
@@ -218,50 +267,28 @@ if "LOGIN" in st.session_state and st.session_state["LOGIN"] is True:
 
     st.divider()
 
-    st.header("Data")
-    cellstyle_jscode = JsCode(
+    st.subheader("Weekly Stats")
+
+    week_df = np.linspace(5, 9, 7)
+    noice_df = np.random.randint(0, 2, 7)
+    week_df += noice_df
+    st.plotly_chart(px.line(week_df))
+
+    with st.sidebar:
+        # st.title("Newsful")
+        st.header(f"Hello {st.session_state['USERNAME']}! 👋")
+        st.markdown(
+            """
+
+        📅 [Report](#report)
+
+        📊 [Daily Stats](#daily-stats)
+
+        📈 [Weekly Stats](#weekly-stats)
         """
-        function(params) {
-            if (params.value == true) {
-                return {
-                    'color': 'green',
-                    'backgroundColor': 'lightgreen'
-                }
-            } else {
-                return {
-                    'color': 'red',
-                    'backgroundColor': 'pink'
-                }
-            }
-        };
-        """
-    )
+        )
+        st.divider()
 
-    df = pd.DataFrame(display_data)
-    # isSafe = not isPhishing and isCredible
-    df["isSafe"] = ~df["isPhishing"] & df["isCredible"]
-    df.drop(columns=["isPhishing", "isCredible"], inplace=True)
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_column("label", cellStyle=cellstyle_jscode)
-    gb.configure_column("isSafe", cellStyle=cellstyle_jscode)
-    gb.configure_grid_options(domLayout="normal")
-    gridOptions = gb.build()
-    AgGrid(
-        df,
-        gridOptions=gridOptions,
-        width="100%",
-        allow_unsafe_jscode=True,  # Set it to True to allow jsfunction to be injected
-    )
-
-    st.download_button(
-        label="Download Data as CSV",
-        data=df.to_csv().encode("utf-8"),
-        file_name="data.csv",
-        mime="text/csv",
-    )
-
-    st.divider()
-
-    if st.button("logout"):
-        del st.session_state["LOGIN"]
-        st.experimental_rerun()
+        if st.button("logout"):
+            del st.session_state["LOGIN"]
+            st.experimental_rerun()
