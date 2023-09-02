@@ -54,11 +54,14 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
     )
-    template = """{content}. Is this news true or false?
-        Without any comment, return the result in the following JSON format {"label": bool, "response": str}
-    """
+    template = data.content + """. Is this news true or false?
+        Without any comment, return the result in the following JSON format {"label": bool, "response": str}"""
 
-    response: str = agent.run(template.format(content=data.content))
+    if DEBUG:
+        print("Template: ")
+        pprint(template, width=120)
+
+    response: str = agent.run(template)
 
     if DEBUG:
         print("Raw response:")
@@ -67,19 +70,23 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     l: int = response.find("{")
     r: int = response.find("}", l) if l != -1 else -1
     if l == -1 or r == -1:
-        print("API response does not contain valid JSON.")
-        raise Exception("API response does not contain valid JSON.")
-
-    # clean
-    response = response[l : r + 1].lower()
-    if response.find('"label"') <= 0 and response.find("label") >= 0:
-        response = response.replace("label", '"label"')
-    if response.find('"response"') <= 0 and response.find("response") >= 0:
-        response = response.replace("response", '"response"')
-
-    if DEBUG:
-        print("Cleaned response:")
-        pprint(response, width=120)
+        if DEBUG:
+            print("API response does not contain valid JSON.")
+        label = "true" in response.lower()
+        response = '{"label": ' + str(label).lower() +', "response": "' + response + '"}'
+        if DEBUG:
+            print("Response: ")
+            pprint(response, width=120)
+    else:
+        # clean
+        response = response[l : r + 1].lower()
+        if response.find('"label"') <= 0 and response.find("label") >= 0:
+            response = response.replace("label", '"label"')
+        if response.find('"response"') <= 0 and response.find("response") >= 0:
+            response = response.replace("response", '"response"')
+        if DEBUG:
+            print("Cleaned response:")
+            pprint(response, width=120)
 
     return FactCheckResponse(**load(StringIO(response)))
 

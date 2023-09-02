@@ -11,7 +11,6 @@ import requests
 
 from core import fact_check_process, get_image, summarize, to_english, fact_check_chat
 
-# from core.image import image_is_true
 from schemas import (
     Article,
     Health,
@@ -31,11 +30,13 @@ URI: str = str(os.environ.get("URI"))
 
 # FastAPI app
 app = FastAPI(
-    title="Newsful API",
-    description="API for Newsful - a news summarization and fact checking app.",
-    version="0.0.1",
     debug=DEBUG,
+    title="Newsful API",
+    summary="API for Newsful - a news summarization and fact checking app.",
+    version="0.0.1",
     docs_url="/",
+    redoc_url="/docs",
+    openapi_url="/openapi.json",
 )
 
 # FastAPI CORS
