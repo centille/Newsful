@@ -1,0 +1,15 @@
+{
+    "url": "https://www.siddhesh.tech",
+    "archive": "https://web.archive.org/web/20230902035331/https://www.siddhesh.tech/",
+    "summary": "donald trump is batman",
+    "response": "False",
+    "dataType": "text",
+    "label": false,
+    "confidence": 58,
+    "references": [
+        "https://www.cnn.com/2015/08/16/politics/donald-trump-iowa-state-fair/index.html"
+    ],
+    "isSafe": false,
+    "updatedAt": 1693606986.045338,
+    "isGovernmentRelated": false
+}
