@@ -7,6 +7,14 @@ authors = [
     "Rithik Raj <rithu0644@gmail.com>",
 ]
 readme = "README.md"
+repository = "https://github.com/centille/Newsful/"
+license = "GPL-3.0-only"
+keywords = ["news", "fact-checking", "fake-news", "newsful", "newsful-backend"]
+build = "poetry.core.masonry.api.build"
+maintainers = [
+    "Siddhesh Agarwal <siddhesh.agarwal@gmail.com>",
+    "Rithik Raj <rithu0644@gmail.com"
+]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
@@ -39,7 +47,7 @@ target-version = ["py310"]
 [tool.isort]
 py_version = 310
 line_length = 120
-skip_glob = ["env/*"]
+skip_glob = ["./assets/*", "./env/*", "./models/*"]
 
 [build-system]
 requires = ["poetry-core"]
