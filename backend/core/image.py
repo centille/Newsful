@@ -1,7 +1,8 @@
 import io
+
 import numpy as np
 from keras.applications import ResNet50  # type: ignore
-from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions  # type: ignore
+from tensorflow.keras.applications.resnet50 import decode_predictions, preprocess_input  # type: ignore
 from tensorflow.keras.preprocessing import image  # type: ignore
 
 # Load the pre-trained ResNet-50 model

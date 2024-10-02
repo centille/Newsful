@@ -2,11 +2,10 @@ from io import BytesIO
 
 import requests
 from deep_translator import GoogleTranslator  # type: ignore
-from PIL import Image
 from openai import OpenAI
+from PIL import Image
 
-from core.utils import tokenize
-from core.utils import clean_text
+from core.utils import clean_text, tokenize
 
 
 def to_english(text: str) -> str:  # type: ignore

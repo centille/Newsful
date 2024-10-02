@@ -1,4 +1,3 @@
-import ujson
 import os
 from datetime import datetime
 from io import StringIO
@@ -6,18 +5,15 @@ from json import load
 from pprint import pprint
 from typing import List, Literal
 
+import ujson
 from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
-from langchain_openai import ChatOpenAI
 from langchain.tools import BaseTool
+from langchain_openai import ChatOpenAI
 
 from core.db import add_to_db, fetch_from_db_if_exists
-from core.postprocessors import (
-    archiveURL,
-    get_top_google_results,
-    is_safe,
-)
+from core.postprocessors import archiveURL, get_top_google_results, is_safe
 from core.preprocessors import is_government_related
-from schemas import FactCheckResponse, TextInputData, ChatTextInputData, ChatReply
+from schemas import ChatReply, ChatTextInputData, FactCheckResponse, TextInputData
 from schemas.Article import Article
 
 

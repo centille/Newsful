@@ -1,11 +1,11 @@
-from pydantic import AnyHttpUrl, BaseModel, validator  # type: ignore
+from pydantic import AnyHttpUrl, BaseModel, field_validator
 
 
 class TextInputData(BaseModel):
     url: AnyHttpUrl
     content: str
 
-    @validator("content")
+    @field_validator("content")
     def clean_summary(cls, v: str) -> str:
         v = v.strip()
         v = v.replace("\n", " ")

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, validator
+from pydantic import AnyHttpUrl, BaseModel, field_validator
 
 
 class Article(BaseModel):
@@ -18,14 +18,14 @@ class Article(BaseModel):
     updatedAt: float = datetime.now().timestamp()
     isGovernmentRelated: Optional[bool] = False
 
-    @validator("summary")
+    @field_validator("summary")
     def clean_summary(cls, v: str) -> str:
         v = v.strip()
         v = v.replace("\n", " ")
         v = v.replace("\t", " ")
         return v.lower()
 
-    @validator("archive")
+    @field_validator("archive")
     def set_archive_to_url_if_empty(cls, v: AnyHttpUrl, values: dict[str, Any]) -> AnyHttpUrl:
         if v == "":
             return values["url"]

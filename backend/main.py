@@ -2,23 +2,16 @@ import io
 import os
 import warnings
 from pprint import pprint
+
 import pytesseract  # type: ignore
+import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.mongo_client import MongoClient
-import requests
 
-from core import fact_check_process, get_image, summarize, to_english, fact_check_chat
-
-from schemas import (
-    Article,
-    Health,
-    ImageInputData,
-    TextInputData,
-    ChatTextInputData,
-    ChatReply,
-)
+from core import fact_check_chat, fact_check_process, get_image, summarize, to_english
+from schemas import Article, ChatReply, ChatTextInputData, Health, ImageInputData, TextInputData
 
 # Load environment variables
 load_dotenv()
@@ -54,13 +47,12 @@ def health() -> Health:
 
     db_is_working = False
     client = MongoClient(URI)  # type: ignore
-    if client.admin.command("ping")["ok"] == 1:  # type: ignore
-        client.close()
-        if DEBUG:
-            print("Pinged your deployment. You successfully connected to MongoDB!")
-        db_is_working = True
-        return Health(status="ok", database=db_is_working, status_code=200)
-    raise Exception("Unable to connect to the database.")
+    assert client.admin.command("ping")["ok"] == 1
+    client.close()
+    if DEBUG:
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    db_is_working = True
+    return Health(status="ok", database=db_is_working, status_code=200)
 
 
 @app.get("/api/summarize/")
@@ -89,9 +81,8 @@ def image_check(data: ImageInputData) -> Article | bool:
         pprint(dict(data))
     pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"  # type: ignore
 
-    response: requests.Response = requests.get(data.picture_url, allow_redirects=True)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch image: {response.status_code}")
+    response: requests.Response = requests.get(data.picture_url, allow_redirects=True, timeout=15)
+    response.raise_for_status()
     image = get_image(data.picture_url)
     res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
     if not isinstance(res, (str, bytes)):

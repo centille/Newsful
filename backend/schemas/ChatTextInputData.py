@@ -1,10 +1,10 @@
-from pydantic import BaseModel, validator  # type: ignore
+from pydantic import BaseModel, field_validator
 
 
 class ChatTextInputData(BaseModel):
     content: str
 
-    @validator("content")
+    @field_validator("content")
     def clean_summary(cls, v: str) -> str:
         v = v.strip()
         v = v.replace("\n", " ")
