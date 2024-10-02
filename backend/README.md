@@ -47,11 +47,11 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
     OPENAI_API_KEY=""
     GOOGLE_CSE_KEY=""
     TESSERACT_PATH=""
-    MONGO_URI=""
     ```
 
 6. Run the API
 
     ```sh
-    uvicorn main:app --host localhost --reload
+    fastapi dev ./main.py # dev
+    fastapi ./main.py     # production
     ```
