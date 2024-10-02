@@ -48,7 +48,7 @@ def summarize(text: str) -> str:
         max_tokens=500,
         temperature=0,
     )
-    return res.choices[0].message.content
+    return str(res.choices[0].message.content) if res.choices[0].message else ""
 
 
 def is_government_related(text: str) -> bool:

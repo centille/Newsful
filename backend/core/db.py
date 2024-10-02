@@ -1,6 +1,5 @@
 from typing import Any, Literal, Tuple
 
-from pydantic import AnyHttpUrl
 from pymongo import MongoClient
 
 from schemas import Article, TextInputData
@@ -62,7 +61,7 @@ def fetch_from_db_if_exists(
         Whether the data was found in the database.
     """
 
-    url: AnyHttpUrl = data.url
+    url = data.url
     summary: str = data.content
 
     # check if connection is working
