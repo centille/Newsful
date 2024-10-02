@@ -2,7 +2,7 @@
 
 ## About
 
-This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI application that uses OpenAI's GPT-3, google serper connected using langchain to fact-check news articles. It also contains a knowledge graph with built-in phishing detection.
+This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI application that uses OpenAI's GPT-4o, Google Programmable Search Engine connected using langchain to fact-check news articles. It also contains a knowledge graph with built-in phishing detection.
 
 ## Dependencies
 
@@ -47,6 +47,7 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
     OPENAI_API_KEY=""
     GOOGLE_CSE_KEY=""
     TESSERACT_PATH=""
+    MONGO_URI=""
     ```
 
 6. Run the API
