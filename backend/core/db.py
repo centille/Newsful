@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from schemas import Article, TextInputData
 
 
-def add_to_db(uri: str, data: Article, DEBUG: bool = False) -> Article:
+def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -16,7 +16,7 @@ def add_to_db(uri: str, data: Article, DEBUG: bool = False) -> Article:
         The connection string to the MongoDB database.
     data : Article
         The data to be added to the database.
-    DEBUG : bool
+    debug : bool
         Whether to print debug statements or not.
 
     Returns
@@ -26,7 +26,7 @@ def add_to_db(uri: str, data: Article, DEBUG: bool = False) -> Article:
     """
 
     # Print object being added to DB
-    if DEBUG:
+    if debug:
         print("Adding to database:")
         print(data)
 
@@ -42,7 +42,7 @@ def fetch_from_db_if_exists(
     uri: str,
     data: TextInputData,
     dtype: Literal["image", "text"],
-    DEBUG: bool = False,
+    debug: bool = False,
 ) -> Tuple[Article, bool]:
     """
     fact_checker checks the data against the database.
@@ -68,19 +68,18 @@ def fetch_from_db_if_exists(
     # check if connection is working
     client = MongoClient(uri)  # type: ignore
     collection = client["NewsFul"]["articles"]  # type: ignore
-    if client.admin.command("ping")["ok"] != 1:  # type: ignore
-        raise Exception("No connection to database")
+    assert client.admin.command("ping")["ok"] == 1  # type: ignore
 
     # fetch from database if exists
     res: dict[str, Any] | None = collection.find_one({"url": url, "summary": summary})  # type: ignore
     client.close()
 
     if res is not None:
-        if DEBUG:
+        if debug:
             print("Found in database")
         return Article(**res), True  # type: ignore
 
-    if DEBUG:
+    if debug:
         print("Not found in database")
     result = Article(url=url, summary=summary, response="", dataType=dtype)
 

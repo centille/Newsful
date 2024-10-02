@@ -1,18 +1,15 @@
-import pickle
-import socket
-import ssl
-from datetime import datetime
 from typing import Any, Dict, List
 
 import pandas as pd
 from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
+from waybackpy.exceptions import MaximumSaveRetriesExceeded
 
 from core.utils import get_domain
 
 
-def is_phishing(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
+def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
     """
     is_phishing checks if the url is a phishing url.
 
@@ -20,7 +17,7 @@ def is_phishing(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     ----------
     url : AnyHttpUrl
         The url to be checked.
-    DEBUG : bool, optional
+    debug : bool, optional
         Whether to print debug statements, by default False
 
     Returns
@@ -30,21 +27,28 @@ def is_phishing(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     """
 
     domain: str = get_domain(url)
-    if DEBUG:
+    if debug:
         print(f"Domain: {domain}")
 
-    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
     if domain in websites:
         return False
 
-    model = pickle.load(open("./models/model.pickle", "rb"))
-    prediction: str = model.predict([url])
-    if DEBUG:
-        print(f"Prediction: {prediction[0]}")
-    return prediction[0] != "good"
+    if not str(url).startswith("https://"):
+        if debug:
+            print("URL isn't HTTPS")
+        return False
+
+    safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
+    if domain.endswith(tuple(safe_tlds)):
+        return False
+
+    if debug:
+        print("URL is safe")
+    return True
 
 
-def is_credible(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
+def is_credible(url: AnyHttpUrl, debug: bool = False) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -65,28 +69,28 @@ def is_credible(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     """
 
     domain: str = get_domain(url)
-    if DEBUG:
+    if debug:
         print(f"Domain: {domain}")
 
     websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
     if domain in websites:
         return False
 
-    if not url.startswith("https://"):
-        if DEBUG:
+    if not str(url).startswith("https://"):
+        if debug:
             print("URL isn't HTTPS")
         return False
 
     safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
-        if DEBUG:
+        if debug:
             print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
 
-    return is_phishing(url, DEBUG)
+    return is_phishing(url, debug)
 
 
-def is_safe(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
+def is_safe(url: AnyHttpUrl, debug: bool = False) -> bool:
     """
     is_safe Checks is the URL is credible and not a phishing URL.
 
@@ -94,7 +98,7 @@ def is_safe(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     ----------
     url : AnyHttpUrl
         The url to be checked.
-    DEBUG : bool, optional
+    debug : bool, optional
         Whether to print debug statements, by default False
 
     Returns
@@ -102,34 +106,10 @@ def is_safe(url: AnyHttpUrl, DEBUG: bool = False) -> bool:
     bool
         True if the url is safe, False otherwise.
     """
-    return not is_phishing(url, DEBUG) and is_credible(url, False, DEBUG)
+    return not is_phishing(url, debug) and is_credible(url, False, debug)
 
 
-def get_confidence(news: str, DEBUG: bool = False) -> int:
-    """
-    get_confidence returns the confidence of the news being fake.
-
-    Parameters
-    ----------
-    news : str
-        The news to be checked.
-
-    Returns
-    -------
-    int
-        The confidence of the news being fake.
-    """
-
-    model = pickle.load(open("./models/PA.pickle", "rb"))
-    vectorizer = pickle.load(open("./models/tfidf_vectorizer.pickle", "rb"))
-    tfidf_x = vectorizer.transform([news])
-    confidence = int(round(model._predict_proba_lr(tfidf_x)[0][1] * 100))
-    if DEBUG:
-        print(f"Confidence: {confidence}%")
-    return confidence
-
-
-def archiveURL(url: AnyHttpUrl, DEBUG: bool = False) -> str:
+def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str | None:
     """
     archiveURL returns the archive url of given url
 
@@ -152,14 +132,14 @@ def archiveURL(url: AnyHttpUrl, DEBUG: bool = False) -> str:
     )
     try:
         archive_url: str = save_api.save()
-        if DEBUG:
+        if debug:
             print(f"Archived URL: {archive_url}")
         return archive_url
-    except Exception:
-        return url
+    except MaximumSaveRetriesExceeded:
+        return None
 
 
-def get_top_google_results(query: str, count: int = 5, DEBUG: bool = False) -> list[AnyHttpUrl]:
+def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> list[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 
@@ -179,7 +159,7 @@ def get_top_google_results(query: str, count: int = 5, DEBUG: bool = False) -> l
     google_search = GoogleSearchAPIWrapper(search_engine="google")
     results: List[Dict[str, Any]] = google_search.results(query, count)  # type: ignore
     result_links: list[AnyHttpUrl] = [result["link"] for result in results]
-    if DEBUG:
+    if debug:
         print(f"Top {count} Google Search Results:")
         for i, link in enumerate(result_links, start=1):
             print(f"{i}) {link}")

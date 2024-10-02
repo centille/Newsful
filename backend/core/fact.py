@@ -1,4 +1,4 @@
-import json
+import ujson
 import os
 from datetime import datetime
 from io import StringIO
@@ -7,13 +7,12 @@ from pprint import pprint
 from typing import List, Literal
 
 from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
-from langchain.llms import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain.tools import BaseTool
 
 from core.db import add_to_db, fetch_from_db_if_exists
 from core.postprocessors import (
     archiveURL,
-    get_confidence,
     get_top_google_results,
     is_safe,
 )
@@ -22,7 +21,7 @@ from schemas import FactCheckResponse, TextInputData, ChatTextInputData, ChatRep
 from schemas.Article import Article
 
 
-def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
+def fact_check_this(data: TextInputData, debug: bool) -> FactCheckResponse:
     """
     fact_check_this checks the data against the OpenAI API.
 
@@ -30,7 +29,7 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     ----------
     data : TextInputData
         The data to be checked.
-    DEBUG : bool
+    debug : bool
         Whether to print debug statements or not.
 
     Returns
@@ -38,14 +37,11 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
     FactCheckResponse
         The result of the fact check.
     """
-    llm = OpenAI(
-        max_tokens=200,
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        max_tokens=2000,
         temperature=0,
-        client=None,
-        model="text-davinci-003",
-        frequency_penalty=1,
-        presence_penalty=0,
-        top_p=1,
+        model_kwargs={"response_format": {"type": "json_object"}},
     )
     tools: List[BaseTool] = load_tools(["google-serper"], llm=llm)
     agent: AgentExecutor = initialize_agent(
@@ -54,27 +50,30 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
     )
-    template = data.content + """. Is this news true or false?
+    template = (
+        data.content
+        + """. Is this news true or false?
         Without any comment, return the result in the following JSON format {"label": bool, "response": str}"""
+    )
 
-    if DEBUG:
+    if debug:
         print("Template: ")
         pprint(template, width=120)
 
     response: str = agent.run(template)
 
-    if DEBUG:
+    if debug:
         print("Raw response:")
         pprint(response, width=120)
 
     l: int = response.find("{")
     r: int = response.find("}", l) if l != -1 else -1
     if l == -1 or r == -1:
-        if DEBUG:
+        if debug:
             print("API response does not contain valid JSON.")
         label = "true" in response.lower()
-        response = '{"label": ' + str(label).lower() +', "response": "' + response + '"}'
-        if DEBUG:
+        response = '{"label": ' + str(label).lower() + ', "response": "' + response + '"}'
+        if debug:
             print("Response: ")
             pprint(response, width=120)
     else:
@@ -84,14 +83,14 @@ def fact_check_this(data: TextInputData, DEBUG: bool) -> FactCheckResponse:
             response = response.replace("label", '"label"')
         if response.find('"response"') <= 0 and response.find("response") >= 0:
             response = response.replace("response", '"response"')
-        if DEBUG:
+        if debug:
             print("Cleaned response:")
             pprint(response, width=120)
 
     return FactCheckResponse(**load(StringIO(response)))
 
 
-def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image", "text"], DEBUG: bool) -> Article:
+def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image", "text"], debug: bool) -> Article:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -103,7 +102,7 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
         The URI of the article.
     dtype : Literal["image", "text"]
         The type of data to be checked.
-    DEBUG : bool
+    debug : bool
         Whether to print debug statements or not.
 
     Returns
@@ -111,17 +110,17 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
     Article
         The result of the fact check.
     """
-    fact_check, exists = fetch_from_db_if_exists(URI, text_data, dtype, DEBUG)
+    fact_check, exists = fetch_from_db_if_exists(URI, text_data, dtype, debug)
     if exists:
-        if DEBUG:
+        if debug:
             print("Found in DB:")
             pprint(dict(fact_check), width=120)
         return fact_check
 
-    if DEBUG:
+    if debug:
         print("Not found in DB. Fetching from API...")
-    fact_check_resp: FactCheckResponse = fact_check_this(text_data, DEBUG)
-    if DEBUG:
+    fact_check_resp: FactCheckResponse = fact_check_this(text_data, debug)
+    if debug:
         print("Filtered Response:")
         pprint(fact_check_resp, width=120)
 
@@ -129,17 +128,16 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
     fact_check.label = fact_check_resp.label
     fact_check.response = fact_check_resp.response
     fact_check.isGovernmentRelated = is_government_related(text_data.content)
-    fact_check.confidence = get_confidence(fact_check.summary, DEBUG)
-    fact_check.references = get_top_google_results(fact_check.summary, DEBUG)
-    fact_check.isSafe = is_safe(fact_check.url, DEBUG)
+    fact_check.references = get_top_google_results(fact_check.summary, debug)
+    fact_check.isSafe = is_safe(fact_check.url, debug)
 
     # Archive URL is news is false
     if not fact_check.label:
-        fact_check.archive = archiveURL(fact_check.url, DEBUG)
+        fact_check.archive = archiveURL(fact_check.url, debug)
 
-    fact_check: Article = add_to_db(URI, fact_check, DEBUG)
+    fact_check: Article = add_to_db(URI, fact_check, debug)
 
-    if DEBUG:
+    if debug:
         # check if "output" directory exists
         if not os.path.exists("./output"):
             os.mkdir("./output")
@@ -147,12 +145,12 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
         file: str = f"./output/{str(datetime.now().timestamp()).replace('.', '-')}.json"
         fact_check_dict = dict(fact_check)
         pprint(fact_check_dict, width=120)
-        json.dump(fact_check_dict, open(file, mode="w+"), indent=4)
+        ujson.dump(fact_check_dict, open(file, mode="w+", encoding="utf-8"), indent=4)
 
     return fact_check
 
 
-def fact_check_this_chat(data: ChatTextInputData, DEBUG: bool) -> ChatReply:
+def fact_check_this_chat(data: ChatTextInputData, debug: bool) -> ChatReply:
     llm = OpenAI(
         max_tokens=200,
         temperature=0,
@@ -175,15 +173,15 @@ def fact_check_this_chat(data: ChatTextInputData, DEBUG: bool) -> ChatReply:
 
     response: str = agent.run(data.content + template)
 
-    if DEBUG:
+    if debug:
         print("Raw response:")
         pprint(response, width=120)
 
     l: int = response.find("{")
-    r: int = response.find("}", l) if l != -1 else -1
+    r: int = response.rfind("}") if l != -1 else -1
     if l == -1 or r == -1:
         print("API response does not contain valid JSON.")
-        raise Exception("API response does not contain valid JSON.")
+        raise ValueError("API response does not contain valid JSON.")
 
     # clean
     response = response[l : r + 1].lower()
@@ -192,7 +190,7 @@ def fact_check_this_chat(data: ChatTextInputData, DEBUG: bool) -> ChatReply:
     if response.find('"response"') <= 0 and response.find("response") >= 0:
         response = response.replace("response", '"response"')
 
-    if DEBUG:
+    if debug:
         print("Cleaned response:")
         pprint(response, width=120)
 
@@ -201,12 +199,12 @@ def fact_check_this_chat(data: ChatTextInputData, DEBUG: bool) -> ChatReply:
     reply = ChatReply(label=True)  # type: ignore
     reply.label = fact_check.label
     reply.response = fact_check.response
-    reply.references = get_top_google_results(data.content, DEBUG=DEBUG)
+    reply.references = get_top_google_results(data.content, debug=debug)
 
     pprint(dict(reply), width=120)
     return reply
 
 
-def fact_check_chat(text_data: ChatTextInputData, dtype: Literal["image", "text"], DEBUG: bool) -> ChatReply:
-    fact_check_response: ChatReply = fact_check_this_chat(text_data, DEBUG)
+def fact_check_chat(text_data: ChatTextInputData, dtype: Literal["image", "text"], debug: bool) -> ChatReply:
+    fact_check_response: ChatReply = fact_check_this_chat(text_data, debug)
     return fact_check_response

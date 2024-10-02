@@ -3,7 +3,7 @@ from io import BytesIO
 import requests
 from deep_translator import GoogleTranslator  # type: ignore
 from PIL import Image
-from summarizer import Summarizer  # type: ignore
+from openai import OpenAI
 
 from core.utils import tokenize
 from core.utils import clean_text
@@ -42,12 +42,14 @@ def summarize(text: str) -> str:
     str
         The summary of the text.
     """
-    if len(text) < 250 or len(text.split()) < 50:
-        return text
-    model = Summarizer()
-    if len(text) < 1000:
-        return model(text, num_sentences=4, use_first=True)
-    return model(text, ratio=0.25, use_first=True)
+    client = OpenAI()
+    res = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": f"Summarize: {text}"}],
+        max_tokens=500,
+        temperature=0,
+    )
+    return res.choices[0].message.content
 
 
 def is_government_related(text: str) -> bool:
@@ -92,8 +94,7 @@ def get_image(image_url: str):
         Raised if the image could not be fetched.
     """
 
-    response: requests.Response = requests.get(image_url, allow_redirects=True)
-    if response.status_code == 200:
-        image_content: bytes = response.content
-        return Image.open(BytesIO(image_content))
-    raise Exception(f"Failed to fetch image: {response.status_code}")
+    response: requests.Response = requests.get(image_url, allow_redirects=True, timeout=15)
+    response.raise_for_status()
+    image_content: bytes = response.content
+    return Image.open(BytesIO(image_content))

@@ -19,13 +19,7 @@ def clean_text(text: str) -> str:
     str
         The optimized text.
     """
-    return (
-        text.strip()
-        .replace("\n", " ")
-        .replace("\t", " ")
-        .replace("\r", " ")
-        .rstrip(".")
-    )
+    return text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ").rstrip(".")
 
 
 def tokenize(text: str) -> list[str]:
@@ -55,8 +49,21 @@ def tokenize(text: str) -> list[str]:
 
 
 def extract_text_from_url(url: str) -> str:
+    """
+    extract_text_from_url extracts text from a url.
+
+    Parameters
+    ----------
+    url : str
+        The url to be extracted.
+
+    Returns
+    -------
+    str
+        The extracted text.
+    """
     try:
-        response: requests.Response = requests.get(url)
+        response: requests.Response = requests.get(url, timeout=15)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
         text: str = soup.get_text()
@@ -79,4 +86,4 @@ def get_domain(url: AnyHttpUrl) -> str:
     str
         The domain of the url.
     """
-    return urlparse(url).netloc
+    return urlparse(str(url)).netloc
