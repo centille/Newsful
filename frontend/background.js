@@ -1,107 +1,85 @@
 // Create a menu Item in the right click context menu of the browser
-chrome.contextMenus.create({
-    id: "extractText",
-    title: "Verify with NewsFul",
-    contexts: ["all"]
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "extractText",
+        title: "Verify with NewsFul",
+        contexts: ["all"]
+    });
 });
 
 // Function to create a popup window to show the results
-const create_popup = () => {
-    chrome.windows.create({
+const createPopup = async () => {
+    const window = await chrome.windows.create({
         url: "./popup.html",
         type: "popup",
         width: 600,
         height: 600,
         focused: true
-    }, function (window) {
-        // Shift focus to the popup window
-        chrome.windows.update(window.id, { focused: true });
     });
-}
 
-// Listen for the verifyImage and verifyText messages from the content script
-chrome.runtime.onMessage.addListener(
-    function (message, sender, sendResponse) {
-        // Call the function to create the popup page and shift focus to it
-        create_popup();
+    // Shift focus to the popup window
+    await chrome.windows.update(window.id, { focused: true });
+};
 
-        // If the selected data is an image
-        if (message.action === "verifyImage") {
-            fetch('http://localhost:8000/api/verify/image', {
-                method: 'POST',
-                body: JSON.stringify(message.data),
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8',
-                },
-            })
-                .then(response => response.json())
-                .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
-                .catch(error => console.error(error));
-        }
-        // If the selected data is text
-        else if (message.action === "verifyText") {
-            fetch('http://localhost:8000/api/verify/text', {
-                method: 'POST',
-                body: JSON.stringify(message.data),
-                headers: {
-                    'Content-type': 'application/json; charset=UTF-8',
-                },
-            })
-                .then(response => response.json())
-                .then(json => chrome.runtime.sendMessage({ action: "displayResponse", data: json }))
-                .catch(error => console.error(error));
-        }
-        // Store the responses of the user to display in the widget
-        else if (message.action === "storeResponse") {
-            chrome.runtime.sendMessage({ action: "check", data: { test: "test" } });
-            chrome.storage.local.get(["searches"], function (result) {
-                if (result.hasOwnProperty("searches")) {
-                    const existing = result.searches;
-                    existing.push(message.data);
-                    chrome.storage.local.set({ searches: existing });
-                } else {
-                    const fresh = [];
-                    fresh.push(message.data);
-                    chrome.storage.local.set({ searches: fresh });
-                }
-            });
-        }
+// Function to handle API requests
+const handleApiRequest = async (endpoint, data) => {
+    const BASE_URL = 'http://localhost:8000';
+    // TODO: check API working via BASE_URL/api/health endpoint
+    try {
+        const response = await fetch(`${BASE_URL}/api/verify/${endpoint}`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8',
+            },
+        });
+        const json = await response.json();
+        chrome.runtime.sendMessage({ action: "displayResponse", data: json });
+    } catch (error) {
+        console.error('API request failed:', error);
     }
-);
+};
+
+// Function to store user responses
+const storeResponse = async (data) => {
+    const result = await chrome.storage.local.get("searches");
+    const searches = result.searches || [];
+    searches.push(data);
+    await chrome.storage.local.set({ searches });
+};
+
+// Listen for messages from content scripts
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "verifyImage" || message.action === "verifyText") {
+        createPopup();
+        handleApiRequest(message.action === "verifyImage" ? "image" : "text", message.data);
+    } else if (message.action === "storeResponse") {
+        storeResponse(message.data);
+    }
+});
 
 // Listen for the click event on the menu item
-chrome.contextMenus.onClicked.addListener(function (info, tab) {
+chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "extractText") {
-        // If the selected data is an image, extract the image url and send the message to the content script
-        if (info?.mediaType && info?.mediaType === "image") {
-            const imgUrl = info.srcUrl;
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.executeScript(tabs[0].id, {
-                    code: `
-                    var dt = {
-                        picture_url: "${imgUrl}",
-                        url: window.location.href
-                    };
+        const isImage = info?.mediaType === "image";
+        const code = isImage
+            ? `chrome.runtime.sendMessage({
+                action: "verifyImage",
+                data: {
+                    picture_url: "${info.srcUrl}",
+                    url: window.location.href
+                }
+            });` : `chrome.runtime.sendMessage({
+            action: "verifyText",
+                data: {
+                    content: window.getSelection().toString(),
+                    url: window.location.href
+                }
+            });`;
 
-                    chrome.runtime.sendMessage({ action: "verifyImage", data: dt });
-                    `
-                });
-            });
-        }
-        // If the selected data is text, extract the text and send the message to the content script
-        else {
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.executeScript(tabs[0].id, {
-                    code: `
-                    var dt = {
-                        content: window.getSelection().toString(),
-                        url: window.location.href
-                    };
-
-                    chrome.runtime.sendMessage({ action: "verifyText", data: dt });
-                    `
-                });
-            });
-        }
+        chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: new Function(code)
+        });
     }
 });
