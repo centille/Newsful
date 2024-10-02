@@ -8,17 +8,17 @@ packages = [{include = "newsful_app"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-streamlit = "^1.25.0"
-pymongo = "^4.4.1"
+streamlit = "^1.37.0"
+pymongo = "^4.6.3"
 python-dotenv = "^1.0.0"
-pydantic = "^2.1.1"
+pydantic = "^2.4.0"
 matplotlib = "^3.7.2"
 streamlit-aggrid = "^0.3.4.post3"
 plotly = "^5.15.0"
 
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
+black = "^24.3.0"
 isort = "^5.12.0"
 
 [build-system]
