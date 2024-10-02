@@ -1,7 +1,6 @@
 from typing import Any, Dict, List
 
 import pandas as pd
-from langchain import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded

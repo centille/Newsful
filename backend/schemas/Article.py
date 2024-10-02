@@ -1,32 +1,22 @@
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseModel, field_validator
+from pydantic import AnyHttpUrl, BaseModel
 
 
 class Article(BaseModel):
+    """The final response class"""
+
     __tablename__: str = "articles"
 
     url: AnyHttpUrl
-    archive: Optional[str] = ""
+    dataType: Literal["text", "image"]
+    label: Literal["correct", "incorrect", "misleading"]
+
+    archive: str | None = None
     summary: str
     response: str
-    dataType: Literal["text", "image"]
-    label: Optional[bool] = False
-    references: Optional[list[AnyHttpUrl]] = []
-    isSafe: Optional[bool] = False
+    references: list[AnyHttpUrl] = []
+    isSafe: bool = False
     updatedAt: float = datetime.now().timestamp()
-    isGovernmentRelated: Optional[bool] = False
-
-    @field_validator("summary")
-    def clean_summary(cls, v: str) -> str:
-        v = v.strip()
-        v = v.replace("\n", " ")
-        v = v.replace("\t", " ")
-        return v.lower()
-
-    @field_validator("archive")
-    def set_archive_to_url_if_empty(cls, v: AnyHttpUrl, values: dict[str, Any]) -> AnyHttpUrl:
-        if v == "":
-            return values["url"]
-        return v
+    isGovernmentRelated: bool = False

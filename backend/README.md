@@ -15,31 +15,42 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
 
 1. Clone the repository
 2. Create a virtual environment with
-```
-$ python -m venv env
-```
+
+    ```sh
+    python -m venv env
+    ```
+
 3. Activate the virtual environment with
 
-  - for Linux:
-```
-$ source env/bin/activate
-```
-  - for Windows:
-```
-$ env\Scripts\activate.bat
-```
+    - for Linux:
+
+        ```sh
+        source env/bin/activate
+        ```
+
+    - for Windows:
+
+        ```sh
+        ./env/Scripts/activate.bat
+        ```
 
 4. Install dependencies
 
-```
-$ pip install poetry
-$ poetry install
-```
+    ```sh
+    pip install poetry # via pip
+    poetry install     # via poetry
+    ```
 
-**Note**: If an error during greenlet installation, `pip install greenlet` first and then rerun `poetry install`.
+5. Set environment variables
 
-5. Run the API
+    ```env
+    OPENAI_API_KEY=""
+    GOOGLE_CSE_KEY=""
+    TESSERACT_PATH=""
+    ```
 
-```
-$ uvicorn main:app --host localhost --reload
-```
+6. Run the API
+
+    ```sh
+    uvicorn main:app --host localhost --reload
+    ```

@@ -22,9 +22,9 @@ def clean_text(text: str) -> str:
     return text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ").rstrip(".")
 
 
-def tokenize(text: str) -> list[str]:
+def split_to_words(text: str) -> list[str]:
     """
-    tokenize A custom tokenizer.
+    split_to_words A custom tokenizer.
 
     Parameters
     ----------
@@ -38,7 +38,7 @@ def tokenize(text: str) -> list[str]:
     """
 
     tokens: list[str] = []
-    token: str = ""
+    token = ""
     for char in text:
         if char.isalnum():
             token += char

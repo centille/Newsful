@@ -6,7 +6,8 @@ from pprint import pprint
 from typing import List, Literal
 
 import ujson
-from langchain.agents import AgentExecutor, AgentType, initialize_agent, load_tools  # type: ignore
+from langchain.agents import AgentExecutor, AgentType, initialize_agent  # type: ignore
+from langchain_community.agent_toolkits.load_tools import load_tools  # type: ignore
 from langchain.tools import BaseTool
 from langchain_openai import ChatOpenAI
 
@@ -62,26 +63,24 @@ def fact_check_this(data: TextInputData, debug: bool) -> FactCheckResponse:
         print("Raw response:")
         pprint(response, width=120)
 
-    l: int = response.find("{")
-    r: int = response.find("}", l) if l != -1 else -1
-    if l == -1 or r == -1:
+    lb: int = response.find("{")
+    rb: int = response.find("}", lb) if lb != -1 else -1
+    if lb == -1 or rb == -1:
         if debug:
             print("API response does not contain valid JSON.")
         label = "true" in response.lower()
         response = '{"label": ' + str(label).lower() + ', "response": "' + response + '"}'
-        if debug:
-            print("Response: ")
-            pprint(response, width=120)
     else:
         # clean
-        response = response[l : r + 1].lower()
+        response = response[lb : rb + 1].lower()
         if response.find('"label"') <= 0 and response.find("label") >= 0:
             response = response.replace("label", '"label"')
         if response.find('"response"') <= 0 and response.find("response") >= 0:
             response = response.replace("response", '"response"')
-        if debug:
-            print("Cleaned response:")
-            pprint(response, width=120)
+
+    if debug:
+        print("Cleaned response:")
+        pprint(response, width=120)
 
     return FactCheckResponse(**load(StringIO(response)))
 

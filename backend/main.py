@@ -15,11 +15,13 @@ from schemas import Article, ChatReply, ChatTextInputData, Health, ImageInputDat
 
 # Load environment variables
 load_dotenv()
+
 # Suppress warnings
 warnings.filterwarnings("ignore")
+
 # Global variables
 DEBUG: bool = True
-URI: str = str(os.environ.get("URI"))
+URI: str = str(os.environ.get("MONGO_URI"))
 
 # FastAPI app
 app = FastAPI(
@@ -28,8 +30,6 @@ app = FastAPI(
     summary="API for Newsful - a news summarization and fact checking app.",
     version="0.0.1",
     docs_url="/",
-    redoc_url="/docs",
-    openapi_url="/openapi.json",
 )
 
 # FastAPI CORS
@@ -79,14 +79,13 @@ def image_check(data: ImageInputData) -> Article | bool:
     """Endpoint to check if an image is fake."""
     if DEBUG:
         pprint(dict(data))
-    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"  # type: ignore
+    pytesseract.pytesseract.tesseract_cmd = os.environ.get("TESSERACT_PATH")
 
     response: requests.Response = requests.get(data.picture_url, allow_redirects=True, timeout=15)
     response.raise_for_status()
     image = get_image(data.picture_url)
     res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
-    if not isinstance(res, (str, bytes)):
-        raise Exception("Unable to read image.")
+    assert isinstance(res, (str, bytes))
     text: str = res if isinstance(res, str) else str(res)
     if DEBUG:
         print(f"{text=}")

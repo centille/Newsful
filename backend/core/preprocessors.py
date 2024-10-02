@@ -5,7 +5,7 @@ from deep_translator import GoogleTranslator  # type: ignore
 from openai import OpenAI
 from PIL import Image
 
-from core.utils import clean_text, tokenize
+from core.utils import clean_text, split_to_words
 
 
 def to_english(text: str) -> str:  # type: ignore
@@ -65,7 +65,7 @@ def is_government_related(text: str) -> bool:
     bool
         True if the text is related to the government, False otherwise.
     """
-    words: list[str] = tokenize(text)
+    words: list[str] = split_to_words(text)
     gov_rel_words: list[str] = ["india", "government", "indian"]
     for word in words:
         if word in gov_rel_words:
