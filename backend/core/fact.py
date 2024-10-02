@@ -147,14 +147,11 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
 
 
 def fact_check_this_chat(data: ChatTextInputData, debug: bool) -> ChatReply:
-    llm = OpenAI(
-        max_tokens=200,
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        max_tokens=2000,
         temperature=0,
-        client=None,
-        model="text-davinci-003",
-        frequency_penalty=1,
-        presence_penalty=0,
-        top_p=1,
+        model_kwargs={"response_format": {"type": "json_object"}},
     )
     tools: List[BaseTool] = load_tools(["google-serper"], llm=llm)
     agent: AgentExecutor = initialize_agent(
