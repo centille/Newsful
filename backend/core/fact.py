@@ -7,14 +7,14 @@ from typing import List, Literal
 
 import ujson
 from langchain.agents import AgentExecutor, AgentType, initialize_agent  # type: ignore
-from langchain_community.agent_toolkits.load_tools import load_tools  # type: ignore
 from langchain.tools import BaseTool
+from langchain_community.agent_toolkits.load_tools import load_tools  # type: ignore
 from langchain_openai import ChatOpenAI
 
 from core.db import add_to_db, fetch_from_db_if_exists
 from core.postprocessors import archiveURL, get_top_google_results, is_safe
 from core.preprocessors import is_government_related
-from schemas import ChatReply, ChatTextInputData, FactCheckResponse, TextInputData
+from schemas import FactCheckResponse, TextInputData
 from schemas.Article import Article
 
 
@@ -143,60 +143,3 @@ def fact_check_process(text_data: TextInputData, URI: str, dtype: Literal["image
         ujson.dump(fact_check_dict, open(file, mode="w+", encoding="utf-8"), indent=4)
 
     return fact_check
-
-
-def fact_check_this_chat(data: ChatTextInputData, debug: bool) -> ChatReply:
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        max_tokens=2000,
-        temperature=0,
-        model_kwargs={"response_format": {"type": "json_object"}},
-    )
-    tools: List[BaseTool] = load_tools(["google-serper"], llm=llm)
-    agent: AgentExecutor = initialize_agent(
-        tools=tools,
-        llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
-    )
-    template = """. Is this news true or false?
-        Without any comment, return the result in the following JSON format {"label": bool, "response": str}
-    """
-
-    response: str = agent.run(data.content + template)
-
-    if debug:
-        print("Raw response:")
-        pprint(response, width=120)
-
-    l: int = response.find("{")
-    r: int = response.rfind("}") if l != -1 else -1
-    if l == -1 or r == -1:
-        print("API response does not contain valid JSON.")
-        raise ValueError("API response does not contain valid JSON.")
-
-    # clean
-    response = response[l : r + 1].lower()
-    if response.find('"label"') <= 0 and response.find("label") >= 0:
-        response = response.replace("label", '"label"')
-    if response.find('"response"') <= 0 and response.find("response") >= 0:
-        response = response.replace("response", '"response"')
-
-    if debug:
-        print("Cleaned response:")
-        pprint(response, width=120)
-
-    fact_check = FactCheckResponse(**load(StringIO(response)))
-
-    reply = ChatReply(label=True)  # type: ignore
-    reply.label = fact_check.label
-    reply.response = fact_check.response
-    reply.references = get_top_google_results(data.content, debug=debug)
-
-    pprint(dict(reply), width=120)
-    return reply
-
-
-def fact_check_chat(text_data: ChatTextInputData, dtype: Literal["image", "text"], debug: bool) -> ChatReply:
-    fact_check_response: ChatReply = fact_check_this_chat(text_data, debug)
-    return fact_check_response

@@ -10,8 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo.mongo_client import MongoClient
 
-from core import fact_check_chat, fact_check_process, get_image, summarize, to_english
-from schemas import Article, ChatReply, ChatTextInputData, Health, ImageInputData, TextInputData
+from core import fact_check_process, get_image, summarize, to_english
+from schemas import Article, Health, ImageInputData, TextInputData
 
 # Load environment variables
 load_dotenv()
@@ -102,11 +102,3 @@ def image_check(data: ImageInputData) -> Article | bool:
 
     pprint(dict(text_data))
     return fact_check_process(text_data, URI, "image", DEBUG)
-
-
-@app.post("/api/chat/text/")
-async def chat_text(data: ChatTextInputData) -> ChatReply:
-    data.content = summarize(to_english(data.content))
-    if DEBUG:
-        pprint(dict(data))
-    return fact_check_chat(data, "text", DEBUG)
