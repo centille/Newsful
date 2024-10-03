@@ -1057,7 +1057,7 @@ pydantic==2.9.2 ; python_version >= "3.10" and python_version < "3.12" \
 pygments==2.18.0 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199 \
     --hash=sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a
-pymongo==4.10.1 ; python_version >= "3.10" and python_version < "3.12" \
+pymongo[srv]==4.10.1 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:0783e0c8e95397c84e9cf8ab092ab1e5dd7c769aec0ef3a5838ae7173b98dea0 \
     --hash=sha256:0f56707497323150bd2ed5d63067f4ffce940d0549d4ea2dfae180deec7f9363 \
     --hash=sha256:11280809e5dacaef4971113f0b4ff4696ee94cfdb720019ff4fa4f9635138252 \
