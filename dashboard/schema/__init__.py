@@ -1,4 +1,5 @@
 from typing import Literal, TypedDict
+
 from pydantic import AnyHttpUrl, BaseModel
 
 
