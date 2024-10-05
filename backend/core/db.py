@@ -1,26 +1,24 @@
 from typing import Union
 
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
 from schemas import FactCheckResponse, TextInputData
 
 
+def db_is_working(uri: str):
+    """Checks if the database is working."""
+    try:
+        client = MongoClient(uri)  # type: ignore
+        assert client.admin.command("ping")["ok"] == 1  # type: ignore
+        client.close()
+        return True
+    except (PyMongoError, AssertionError):
+        return False
+
+
 def add_to_db(uri: str, data: FactCheckResponse):
-    """
-    add_to_db calculates all the necessary details and adds the data to the database.
-
-    Parameters
-    ----------
-    uri: str
-        The connection string to the MongoDB database.
-    data : FactCheckResponse
-        The data to be added to the database.
-
-    Returns
-    -------
-    FactCheckResponse
-        The data that was added to the database.
-    """
+    """adds the Pydantic object to the mongo database"""
 
     # Add object to DB
     client = MongoClient(uri)  # type: ignore

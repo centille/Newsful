@@ -8,10 +8,8 @@ import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pymongo.errors import PyMongoError
-from pymongo.mongo_client import MongoClient
 
-from core import fact_check_process, get_image, summarize, to_english
+from core import fact_check_process, get_image, summarize, to_english, db_is_working
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
 
 # Load environment variables
@@ -21,8 +19,8 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 # Global variables
-DEBUG = os.environ.get("env", "dev") == "dev"
-URI: str = str(os.environ.get("MONGO_URI"))
+DEBUG = os.environ.get("ENV", "dev") == "dev"
+URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 
 # FastAPI app
 app = FastAPI(
@@ -50,14 +48,7 @@ logfire.instrument_pydantic()
 def health() -> HealthResponse:
     """Health check endpoint."""
 
-    client = MongoClient(URI)  # type: ignore
-    try:
-        client.admin.command("ping")  # type: ignore
-        client.close()
-        db_is_working = True
-    except PyMongoError:
-        db_is_working = False
-    return HealthResponse(database_is_working=db_is_working)
+    return HealthResponse(database_is_working=db_is_working(URI))
 
 
 @app.post("/verify/text/")
@@ -78,15 +69,9 @@ async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
     response: requests.Response = requests.get(pic_url_str, allow_redirects=True, timeout=15)
     response.raise_for_status()
     image = get_image(pic_url_str)
-    res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
+    res = pytesseract.image_to_string(image)  # type: ignore
     assert isinstance(res, (str, bytes))
-    text: str = res if isinstance(res, str) else str(res)
-
-    if len(text) < 10:
-        image_bytes = io.BytesIO()
-        image.save(image_bytes, format="PNG")
-        image_bytes = image_bytes.getvalue()
-        raise NotImplementedError("Image is not supported yet.")
+    text = res if isinstance(res, str) else res.decode("utf-8")
     text_data = TextInputData(
         url=data.url,
         content=text,

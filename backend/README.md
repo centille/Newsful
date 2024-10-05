@@ -44,11 +44,12 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
 5. Set environment variables
 
     ```env
-    OPENAI_API_KEY=""
-    GOOGLE_CSE_ID=""
-    GOOGLE_API_KEY=""
-    TESSERACT_PATH=""
-    MONGO_URI=""
+    OPENAI_API_KEY="" # https://platform.openai.com/account/api-keys
+    GOOGLE_CSE_ID=""  # https://cse.google.com/cse
+    GOOGLE_API_KEY="" # https://developers.google.com/custom-search/v1/introduction
+    TESSERACT_PATH="" # https://github.com/tesseract-ocr/tesseract
+    MONGO_URI=""      # https://www.mongodb.com
+    ENV="dev"         # dev or prod
     ```
 
 6. Run the API
