@@ -6,7 +6,7 @@ from typing import Literal
 import ujson
 from langchain.agents import AgentType, initialize_agent  # type: ignore
 from langchain_core.tools import Tool
-from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_google_community import GoogleSearchAPIWrapper  # type: ignore
 from langchain_openai import ChatOpenAI
 
 from core.db import add_to_db, fetch_from_db_if_exists
@@ -105,11 +105,11 @@ async def fact_check_process(
         label=fact_check_resp.label,
         response=fact_check_resp.explanation,
         summary=text_data.content,
-        references=get_top_google_results(fact_check_resp.explanation, debug),
+        references=get_top_google_results(fact_check_resp.explanation),
         url=text_data.url,
         dataType=dtype,
         isGovernmentRelated=is_government_related(text_data.content),
-        isSafe=is_safe(text_data.url, debug) if text_data.url is not None else False,
+        isSafe=is_safe(text_data.url) if text_data.url is not None else False,
         updatedAt=datetime.now().timestamp(),
         archive=None,
     )

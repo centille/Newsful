@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 import pandas as pd
-from langchain_google_community import GoogleSearchAPIWrapper
+from langchain_google_community import GoogleSearchAPIWrapper  # type: ignore
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
@@ -125,7 +125,7 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str | None:
         return None
 
 
-def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> list[AnyHttpUrl]:
+def get_top_google_results(query: str, count: int = 5) -> list[AnyHttpUrl]:
     """
     get_top_google_results returns the top google search results for the given query.
 
@@ -145,8 +145,4 @@ def get_top_google_results(query: str, count: int = 5, debug: bool = False) -> l
     google_search = GoogleSearchAPIWrapper(search_engine="google")
     results: List[Dict[str, Any]] = google_search.results(query, count)  # type: ignore
     result_links: list[AnyHttpUrl] = [result["link"] for result in results]
-    if debug:
-        print(f"Top {count} Google Search Results:")
-        for i, link in enumerate(result_links, start=1):
-            print(f"{i}) {link}")
     return result_links
