@@ -2,8 +2,9 @@ from io import BytesIO
 
 import requests
 from deep_translator import GoogleTranslator  # type: ignore
-from openai import OpenAI
+from openai import AsyncOpenAI
 from PIL import Image
+from PIL.ImageFile import ImageFile
 
 from core.utils import clean_text, split_to_words
 
@@ -27,7 +28,7 @@ def to_english(text: str) -> str:  # type: ignore
     return clean_text(text)  # type: ignore
 
 
-def summarize(text: str) -> str:
+async def summarize(text: str) -> str:
     """
     summarize summarizes text.
 
@@ -41,10 +42,12 @@ def summarize(text: str) -> str:
     str
         The summary of the text.
     """
-    client = OpenAI()
-    res = client.chat.completions.create(
+    if len(text) < 200:
+        return text
+    client = AsyncOpenAI()
+    res = await client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": f"Summarize: {text}"}],
+        messages=[{"role": "user", "content": f"Summarize this conent without adding any context: {text}"}],
         max_tokens=500,
         temperature=0,
     )
@@ -73,7 +76,7 @@ def is_government_related(text: str) -> bool:
     return False
 
 
-def get_image(image_url: str):
+def get_image(image_url: str) -> ImageFile:
     """
     get_image fetches an image from a url.
 

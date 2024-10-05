@@ -1,11 +1,11 @@
-from typing import Any, Literal, Tuple
+from typing import Any, Union
 
 from pymongo import MongoClient
 
-from schemas import Article, TextInputData
+from schemas import FactCheckResponse, TextInputData
 
 
-def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
+def add_to_db(uri: str, data: FactCheckResponse, debug: bool = False) -> FactCheckResponse:
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -13,14 +13,14 @@ def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
     ----------
     uri: str
         The connection string to the MongoDB database.
-    data : Article
+    data : FactCheckResponse
         The data to be added to the database.
     debug : bool
         Whether to print debug statements or not.
 
     Returns
     -------
-    Article
+    FactCheckResponse
         The data that was added to the database.
     """
 
@@ -40,9 +40,7 @@ def add_to_db(uri: str, data: Article, debug: bool = False) -> Article:
 def fetch_from_db_if_exists(
     uri: str,
     data: TextInputData,
-    dtype: Literal["image", "text"],
-    debug: bool = False,
-) -> Tuple[Article, bool]:
+) -> Union[FactCheckResponse, None]:
     """
     fact_checker checks the data against the database.
 
@@ -55,7 +53,7 @@ def fetch_from_db_if_exists(
 
     Returns
     -------
-    Article
+    FactCheckResponse
         The result of the fact check.
     bool
         Whether the data was found in the database.
@@ -74,12 +72,5 @@ def fetch_from_db_if_exists(
     client.close()
 
     if res is not None:
-        if debug:
-            print("Found in database")
-        return Article(**res), True  # type: ignore
-
-    if debug:
-        print("Not found in database")
-    result = Article(url=url, summary=summary, response="", dataType=dtype)
-
-    return result, False
+        return FactCheckResponse.model_validate(res)
+    return None

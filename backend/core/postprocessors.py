@@ -4,6 +4,7 @@ import pandas as pd
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
+from langchain_community.tools import GoogleSearchAPIWrapper
 
 from core.utils import get_domain
 
@@ -71,7 +72,7 @@ def is_credible(url: AnyHttpUrl, debug: bool = False) -> bool:
     if debug:
         print(f"Domain: {domain}")
 
-    websites: pd.Series[str] = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
     if domain in websites:
         return False
 
