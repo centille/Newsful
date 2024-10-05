@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Union
 
 from pymongo import MongoClient
 
@@ -27,7 +27,7 @@ def add_to_db(uri: str, data: FactCheckResponse):
     # Add object to DB
     client = MongoClient(uri)  # type: ignore
     collection = client["NewsFul"]["articles"]  # type: ignore
-    collection.insert_one(dict(data))  # type: ignore
+    collection.insert_one(data.model_dump())  # type: ignore
     client.close()
 
 
@@ -62,7 +62,7 @@ def fetch_from_db_if_exists(
     assert client.admin.command("ping")["ok"] == 1  # type: ignore
 
     # fetch from database if exists
-    res: dict[str, Any] | None = collection.find_one({"url": url, "summary": summary})  # type: ignore
+    res = collection.find_one({"url": url, "summary": summary})  # type: ignore
     client.close()
 
     if res is not None:

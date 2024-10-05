@@ -10,21 +10,7 @@ from core.utils import get_domain
 
 
 def is_phishing(url: AnyHttpUrl) -> bool:
-    """
-    is_phishing checks if the url is a phishing url.
-
-    Parameters
-    ----------
-    url : AnyHttpUrl
-        The url to be checked.
-    debug : bool, optional
-        Whether to print debug statements, by default False
-
-    Returns
-    -------
-    bool
-        True if the url is a phishing url, False otherwise.
-    """
+    """checks if the url is a phishing url."""
 
     domain = get_domain(url)
 
@@ -35,31 +21,12 @@ def is_phishing(url: AnyHttpUrl) -> bool:
     if not str(url).startswith("https://"):
         return False
 
-    safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
-    if domain.endswith(tuple(safe_tlds)):
-        return False
-    return True
+    safe_tlds = (".gov", ".org", ".edu", ".gov.in")
+    return not domain.endswith(safe_tlds)
 
 
 def is_credible(url: AnyHttpUrl) -> bool:
-    """
-    is_credible checks if the url is a credible url.
-
-    Parameters
-    ----------
-    url : AnyHttpUrl
-        The url to be checked.
-
-    Returns
-    -------
-    bool
-        True if the url is a credible url, False otherwise.
-
-    Reference
-    ---------
-    - https://www.microsoft.com/en-us/edge/learning-center/how-to-tell-if-a-site-is-credible
-    - https://www.thoughtco.com/gauging-website-reliability-2073838
-    """
+    """checks if the url is a credible url."""
 
     domain = get_domain(url)
 
@@ -77,38 +44,12 @@ def is_credible(url: AnyHttpUrl) -> bool:
 
 
 def is_safe(url: AnyHttpUrl) -> bool:
-    """
-    is_safe Checks is the URL is credible and not a phishing URL.
-
-    Parameters
-    ----------
-    url : AnyHttpUrl
-        The url to be checked.
-    debug : bool, optional
-        Whether to print debug statements, by default False
-
-    Returns
-    -------
-    bool
-        True if the url is safe, False otherwise.
-    """
+    """Checks is the URL is credible and not a phishing URL."""
     return not is_phishing(url) and is_credible(url)
 
 
-def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str | None:
-    """
-    archiveURL returns the archive url of given url
-
-    Parameters
-    ----------
-    url : str
-        The url to be archived.
-
-    Returns
-    -------
-    str
-        The archive url of the given url. If the url is not archived, the original url is returned.
-    """
+def archive_url(url: AnyHttpUrl, debug: bool = False) -> str | None:
+    """returns the archive url of given url"""
 
     user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
     save_api = WaybackMachineSaveAPI(
@@ -126,23 +67,9 @@ def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str | None:
 
 
 def get_top_google_results(query: str, count: int = 5) -> list[AnyHttpUrl]:
-    """
-    get_top_google_results returns the top google search results for the given query.
-
-    Parameters
-    ----------
-    query : str
-        The query to be searched.
-    count : int, optional
-        The number of results to be returned, by default 5
-
-    Returns
-    -------
-    list[AnyHttpUrl]
-        The list of top google search results for the given query.
-    """
+    """returns the top google search results for the given query."""
 
     google_search = GoogleSearchAPIWrapper(search_engine="google")
     results: List[Dict[str, Any]] = google_search.results(query, count)  # type: ignore
-    result_links: list[AnyHttpUrl] = [result["link"] for result in results]
+    result_links = [result["link"] for result in results]
     return result_links

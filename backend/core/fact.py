@@ -10,7 +10,7 @@ from langchain_google_community import GoogleSearchAPIWrapper  # type: ignore
 from langchain_openai import ChatOpenAI
 
 from core.db import add_to_db, fetch_from_db_if_exists
-from core.postprocessors import archiveURL, get_top_google_results, is_safe
+from core.postprocessors import archive_url, get_top_google_results, is_safe
 from core.preprocessors import is_government_related
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 
@@ -46,7 +46,7 @@ async def fact_check_this(data: TextInputData) -> GPTFactCheckModel:
     agent = initialize_agent(
         tools=[search_tool],
         llm=llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
     )
     template = (
@@ -116,7 +116,7 @@ async def fact_check_process(
 
     # Archive URL is news is false
     if fact_check.label != FactCheckLabel.CORRECT and fact_check.url is not None:
-        fact_check.archive = archiveURL(fact_check.url, debug)
+        fact_check.archive = archive_url(fact_check.url, debug)
 
     add_to_db(uri, fact_check)
 
