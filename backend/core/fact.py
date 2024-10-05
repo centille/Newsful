@@ -1,9 +1,6 @@
-import os
 from datetime import datetime
-from pprint import pprint
 from typing import Literal
 
-import ujson
 from langchain.agents import AgentType, initialize_agent  # type: ignore
 from langchain_core.tools import Tool
 from langchain_google_community import GoogleSearchAPIWrapper  # type: ignore
@@ -23,8 +20,6 @@ async def fact_check_this(data: TextInputData) -> GPTFactCheckModel:
     ----------
     data : TextInputData
         The data to be checked.
-    debug : bool
-        Whether to print debug statements or not.
 
     Returns
     -------
@@ -64,9 +59,7 @@ async def fact_check_this(data: TextInputData) -> GPTFactCheckModel:
     return GPTFactCheckModel.model_validate_json(response, strict=True)
 
 
-async def fact_check_process(
-    text_data: TextInputData, uri: str, dtype: Literal["image", "text"], debug: bool
-) -> FactCheckResponse:
+async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal["image", "text"]) -> FactCheckResponse:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -78,8 +71,6 @@ async def fact_check_process(
         The URI of the article.
     dtype : Literal["image", "text"]
         The type of data to be checked.
-    debug : bool
-        Whether to print debug statements or not.
 
     Returns
     -------
@@ -88,17 +79,9 @@ async def fact_check_process(
     """
     fact_check_ = fetch_from_db_if_exists(uri, text_data)
     if fact_check_ is not None:
-        if debug:
-            print("Found in DB:")
-            pprint(fact_check_.model_dump(), width=120)
         return fact_check_
 
-    if debug:
-        print("Not found in DB. Fetching from API...")
     fact_check_resp = await fact_check_this(text_data)
-    if debug:
-        print("Filtered Response:")
-        pprint(fact_check_resp, width=120)
 
     # assign to right variable
     fact_check = FactCheckResponse(
@@ -116,23 +99,7 @@ async def fact_check_process(
 
     # Archive URL is news is false
     if fact_check.label != FactCheckLabel.CORRECT and fact_check.url is not None:
-        fact_check.archive = archive_url(fact_check.url, debug)
+        fact_check.archive = archive_url(fact_check.url)
 
     add_to_db(uri, fact_check)
-
-    if debug:
-        os.makedirs("./output", exist_ok=True)
-
-        file: str = f"./output/{str(datetime.now().timestamp()).replace('.', '-')}.json"
-        fact_check_dict = dict(fact_check)
-        pprint(fact_check_dict, width=120)
-        ujson.dump(
-            fact_check_dict,
-            open(file, mode="w+", encoding="utf-8"),
-            indent=4,
-            allow_nan=False,
-            reject_bytes=True,
-            escape_forward_slashes=False,
-        )
-
     return fact_check

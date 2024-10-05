@@ -15,8 +15,6 @@ def add_to_db(uri: str, data: FactCheckResponse):
         The connection string to the MongoDB database.
     data : FactCheckResponse
         The data to be added to the database.
-    debug : bool
-        Whether to print debug statements or not.
 
     Returns
     -------

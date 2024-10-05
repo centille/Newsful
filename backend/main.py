@@ -2,6 +2,7 @@ import io
 import os
 import warnings
 
+import logfire
 import pytesseract  # type: ignore
 import requests
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 # Global variables
-DEBUG: bool = True
+DEBUG = os.environ.get("env", "dev") == "dev"
 URI: str = str(os.environ.get("MONGO_URI"))
 
 # FastAPI app
@@ -39,6 +40,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logfire.configure()
+logfire.instrument_fastapi(app)
+logfire.instrument_pymongo()
+
 
 @app.get("/health/")
 def health() -> HealthResponse:
@@ -49,12 +54,8 @@ def health() -> HealthResponse:
         client.admin.command("ping")  # type: ignore
         client.close()
         db_is_working = True
-        if DEBUG:
-            print("Pinged your deployment. You successfully connected to MongoDB!")
-    except PyMongoError as e:
+    except PyMongoError:
         db_is_working = False
-        if DEBUG:
-            print(f"Mongo error: {e}. Check if MongoDB is running.")
     return HealthResponse(database_is_working=db_is_working)
 
 
@@ -63,16 +64,13 @@ async def verify_news(data: TextInputData) -> FactCheckResponse:
     """Endpoint to verify a news article."""
 
     data.content = await summarize(to_english(data.content))
-    if DEBUG:
-        print(data.model_dump_json())
-    return await fact_check_process(data, URI, "text", DEBUG)
+    return await fact_check_process(data, URI, "text")
 
 
 @app.post("/verify/image/")
 async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
     """Endpoint to check if an image is fake."""
-    if DEBUG:
-        print(data.model_dump_json())
+
     pytesseract.pytesseract.tesseract_cmd = os.environ.get("TESSERACT_PATH")
 
     pic_url_str = str(data.picture_url)
@@ -82,8 +80,6 @@ async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
     res: bytes | str | dict[str, bytes | str] = pytesseract.image_to_string(image)  # type: ignore
     assert isinstance(res, (str, bytes))
     text: str = res if isinstance(res, str) else str(res)
-    if DEBUG:
-        print(f"{text=}")
 
     if len(text) < 10:
         image_bytes = io.BytesIO()
@@ -96,4 +92,4 @@ async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
     )
 
     print(text_data.model_dump_json())
-    return await fact_check_process(text_data, URI, "image", DEBUG)
+    return await fact_check_process(text_data, URI, "image")

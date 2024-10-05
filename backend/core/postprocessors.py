@@ -48,20 +48,17 @@ def is_safe(url: AnyHttpUrl) -> bool:
     return not is_phishing(url) and is_credible(url)
 
 
-def archive_url(url: AnyHttpUrl, debug: bool = False) -> str | None:
+def archive_url(url: AnyHttpUrl) -> str | None:
     """returns the archive url of given url"""
 
     user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
     save_api = WaybackMachineSaveAPI(
         url=str(url),
         user_agent=user_agent,
-        max_tries=12,
+        max_tries=5,
     )
     try:
-        archive_url: str = save_api.save()
-        if debug:
-            print(f"Archived URL: {archive_url}")
-        return archive_url
+        return save_api.save()
     except MaximumSaveRetriesExceeded:
         return None
 
