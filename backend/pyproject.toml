@@ -44,7 +44,10 @@ target-version = ["py310"]
 [tool.isort]
 py_version = 310
 line_length = 120
-skip_glob = ["./assets/*", "./env/*", "./models/*"]
+skip_glob = ["./assets/*"]
+
+[tool.logfire]
+pydantic_plugin_record = "failure"
 
 [build-system]
 requires = ["poetry-core"]

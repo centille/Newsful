@@ -41,8 +41,9 @@ app.add_middleware(
 )
 
 logfire.configure()
-logfire.instrument_fastapi(app)
+logfire.instrument_fastapi(app, record_send_receive=True)
 logfire.instrument_pymongo()
+logfire.instrument_pydantic()
 
 
 @app.get("/health/")
