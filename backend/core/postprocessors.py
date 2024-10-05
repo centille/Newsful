@@ -1,15 +1,15 @@
 from typing import Any, Dict, List
 
 import pandas as pd
+from langchain_google_community import GoogleSearchAPIWrapper
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
-from langchain_community.tools import GoogleSearchAPIWrapper
 
 from core.utils import get_domain
 
 
-def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
+def is_phishing(url: AnyHttpUrl) -> bool:
     """
     is_phishing checks if the url is a phishing url.
 
@@ -26,29 +26,22 @@ def is_phishing(url: AnyHttpUrl, debug: bool = False) -> bool:
         True if the url is a phishing url, False otherwise.
     """
 
-    domain: str = get_domain(url)
-    if debug:
-        print(f"Domain: {domain}")
+    domain = get_domain(url)
 
     websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
     if domain in websites:
         return False
 
     if not str(url).startswith("https://"):
-        if debug:
-            print("URL isn't HTTPS")
         return False
 
     safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
     if domain.endswith(tuple(safe_tlds)):
         return False
-
-    if debug:
-        print("URL is safe")
     return True
 
 
-def is_credible(url: AnyHttpUrl, debug: bool = False) -> bool:
+def is_credible(url: AnyHttpUrl) -> bool:
     """
     is_credible checks if the url is a credible url.
 
@@ -68,29 +61,22 @@ def is_credible(url: AnyHttpUrl, debug: bool = False) -> bool:
     - https://www.thoughtco.com/gauging-website-reliability-2073838
     """
 
-    domain: str = get_domain(url)
-    if debug:
-        print(f"Domain: {domain}")
+    domain = get_domain(url)
 
-    websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
-    if domain in websites:
+    websites = pd.read_csv("./assets/websites.csv", usecols=["hostname"])  # type: ignore
+    if websites.hostname.str.contains(domain).any(bool_only=True):  # type: ignore
         return False
 
     if not str(url).startswith("https://"):
-        if debug:
-            print("URL isn't HTTPS")
         return False
 
     safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
     if any(domain.endswith(tld) for tld in safe_tlds):
-        if debug:
-            print(f"Domain ends with {' or '.join(safe_tlds)}")
         return True
+    return is_phishing(url)
 
-    return is_phishing(url, debug)
 
-
-def is_safe(url: AnyHttpUrl, debug: bool = False) -> bool:
+def is_safe(url: AnyHttpUrl) -> bool:
     """
     is_safe Checks is the URL is credible and not a phishing URL.
 
@@ -106,7 +92,7 @@ def is_safe(url: AnyHttpUrl, debug: bool = False) -> bool:
     bool
         True if the url is safe, False otherwise.
     """
-    return not is_phishing(url, debug) and is_credible(url, False, debug)
+    return not is_phishing(url) and is_credible(url)
 
 
 def archiveURL(url: AnyHttpUrl, debug: bool = False) -> str | None:

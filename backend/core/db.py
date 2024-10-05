@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from schemas import FactCheckResponse, TextInputData
 
 
-def add_to_db(uri: str, data: FactCheckResponse, debug: bool = False) -> FactCheckResponse:
+def add_to_db(uri: str, data: FactCheckResponse):
     """
     add_to_db calculates all the necessary details and adds the data to the database.
 
@@ -24,17 +24,11 @@ def add_to_db(uri: str, data: FactCheckResponse, debug: bool = False) -> FactChe
         The data that was added to the database.
     """
 
-    # Print object being added to DB
-    if debug:
-        print("Adding to database:")
-        print(data)
-
     # Add object to DB
     client = MongoClient(uri)  # type: ignore
     collection = client["NewsFul"]["articles"]  # type: ignore
     collection.insert_one(dict(data))  # type: ignore
     client.close()
-    return data
 
 
 def fetch_from_db_if_exists(

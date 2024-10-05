@@ -28,8 +28,7 @@ app = FastAPI(
     debug=DEBUG,
     title="Newsful API",
     description="API for Newsful - a news summarization and fact checking app.",
-    summary=open("./README.md", "r", encoding="utf-8").read(),
-    version="0.0.1",
+    version="0.1.0",
 )
 
 # FastAPI CORS
