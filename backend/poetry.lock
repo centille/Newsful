@@ -449,21 +449,21 @@ files = [
 
 [[package]]
 name = "dnspython"
-version = "2.6.1"
+version = "2.7.0"
 description = "DNS toolkit"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "dnspython-2.6.1-py3-none-any.whl", hash = "sha256:5ef3b9680161f6fa89daf8ad451b5f1a33b18ae8a1c6778cdf4b43f08c0a6e50"},
-    {file = "dnspython-2.6.1.tar.gz", hash = "sha256:e8f0f9c23a7b7cb99ded64e6c3a6f3e701d78f50c55e002b839dea7225cff7cc"},
+    {file = "dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86"},
+    {file = "dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1"},
 ]
 
 [package.extras]
-dev = ["black (>=23.1.0)", "coverage (>=7.0)", "flake8 (>=7)", "mypy (>=1.8)", "pylint (>=3)", "pytest (>=7.4)", "pytest-cov (>=4.1.0)", "sphinx (>=7.2.0)", "twine (>=4.0.0)", "wheel (>=0.42.0)"]
-dnssec = ["cryptography (>=41)"]
+dev = ["black (>=23.1.0)", "coverage (>=7.0)", "flake8 (>=7)", "hypercorn (>=0.16.0)", "mypy (>=1.8)", "pylint (>=3)", "pytest (>=7.4)", "pytest-cov (>=4.1.0)", "quart-trio (>=0.11.0)", "sphinx (>=7.2.0)", "sphinx-rtd-theme (>=2.0.0)", "twine (>=4.0.0)", "wheel (>=0.42.0)"]
+dnssec = ["cryptography (>=43)"]
 doh = ["h2 (>=4.1.0)", "httpcore (>=1.0.0)", "httpx (>=0.26.0)"]
-doq = ["aioquic (>=0.9.25)"]
-idna = ["idna (>=3.6)"]
+doq = ["aioquic (>=1.0.0)"]
+idna = ["idna (>=3.7)"]
 trio = ["trio (>=0.23)"]
 wmi = ["wmi (>=1.5.1)"]
 
@@ -1336,8 +1336,13 @@ files = [
 executing = ">=2.0.1"
 opentelemetry-exporter-otlp-proto-http = ">=1.21.0"
 opentelemetry-instrumentation = ">=0.41b0"
+opentelemetry-instrumentation-aiohttp-client = {version = ">=0.42b0", optional = true, markers = "extra == \"aiohttp\""}
 opentelemetry-instrumentation-fastapi = {version = ">=0.42b0", optional = true, markers = "extra == \"fastapi\""}
+opentelemetry-instrumentation-httpx = {version = ">=0.42b0", optional = true, markers = "extra == \"httpx\""}
 opentelemetry-instrumentation-pymongo = {version = ">=0.42b0", optional = true, markers = "extra == \"pymongo\""}
+opentelemetry-instrumentation-requests = {version = ">=0.42b0", optional = true, markers = "extra == \"requests\""}
+opentelemetry-instrumentation-sqlalchemy = {version = ">=0.42b0", optional = true, markers = "extra == \"sqlalchemy\""}
+opentelemetry-instrumentation-starlette = {version = ">=0.42b0", optional = true, markers = "extra == \"starlette\""}
 opentelemetry-sdk = ">=1.21.0"
 protobuf = ">=4.23.4"
 rich = ">=13.4.2"
@@ -1735,6 +1740,27 @@ setuptools = ">=16.0"
 wrapt = ">=1.0.0,<2.0.0"
 
 [[package]]
+name = "opentelemetry-instrumentation-aiohttp-client"
+version = "0.48b0"
+description = "OpenTelemetry aiohttp client instrumentation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_instrumentation_aiohttp_client-0.48b0-py3-none-any.whl", hash = "sha256:142314ccc6ed4743d18adf0d0cc9ed36fc0d8cacbe0b2365ce51913cce1c3ceb"},
+    {file = "opentelemetry_instrumentation_aiohttp_client-0.48b0.tar.gz", hash = "sha256:925e7b3286d083b4b1781720e1717fc22c15696649380e29e32f75fa50fe6570"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.48b0"
+opentelemetry-semantic-conventions = "0.48b0"
+opentelemetry-util-http = "0.48b0"
+wrapt = ">=1.0.0,<2.0.0"
+
+[package.extras]
+instruments = ["aiohttp (>=3.0,<4.0)"]
+
+[[package]]
 name = "opentelemetry-instrumentation-asgi"
 version = "0.48b0"
 description = "ASGI instrumentation for OpenTelemetry"
@@ -1777,6 +1803,26 @@ opentelemetry-util-http = "0.48b0"
 instruments = ["fastapi (>=0.58,<1.0)"]
 
 [[package]]
+name = "opentelemetry-instrumentation-httpx"
+version = "0.48b0"
+description = "OpenTelemetry HTTPX Instrumentation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_instrumentation_httpx-0.48b0-py3-none-any.whl", hash = "sha256:d94f9d612c82d09fe22944d1904a30a464c19bea2ba76be656c99a28ad8be8e5"},
+    {file = "opentelemetry_instrumentation_httpx-0.48b0.tar.gz", hash = "sha256:ee977479e10398931921fb995ac27ccdeea2e14e392cb27ef012fc549089b60a"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.48b0"
+opentelemetry-semantic-conventions = "0.48b0"
+opentelemetry-util-http = "0.48b0"
+
+[package.extras]
+instruments = ["httpx (>=0.18.0)"]
+
+[[package]]
 name = "opentelemetry-instrumentation-pymongo"
 version = "0.48b0"
 description = "OpenTelemetry pymongo instrumentation"
@@ -1794,6 +1840,68 @@ opentelemetry-semantic-conventions = "0.48b0"
 
 [package.extras]
 instruments = ["pymongo (>=3.1,<5.0)"]
+
+[[package]]
+name = "opentelemetry-instrumentation-requests"
+version = "0.48b0"
+description = "OpenTelemetry requests instrumentation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_instrumentation_requests-0.48b0-py3-none-any.whl", hash = "sha256:d4f01852121d0bd4c22f14f429654a735611d4f7bf3cf93f244bdf1489b2233d"},
+    {file = "opentelemetry_instrumentation_requests-0.48b0.tar.gz", hash = "sha256:67ab9bd877a0352ee0db4616c8b4ae59736ddd700c598ed907482d44f4c9a2b3"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.48b0"
+opentelemetry-semantic-conventions = "0.48b0"
+opentelemetry-util-http = "0.48b0"
+
+[package.extras]
+instruments = ["requests (>=2.0,<3.0)"]
+
+[[package]]
+name = "opentelemetry-instrumentation-sqlalchemy"
+version = "0.48b0"
+description = "OpenTelemetry SQLAlchemy instrumentation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_instrumentation_sqlalchemy-0.48b0-py3-none-any.whl", hash = "sha256:625848a34aa5770cb4b1dcdbd95afce4307a0230338711101325261d739f391f"},
+    {file = "opentelemetry_instrumentation_sqlalchemy-0.48b0.tar.gz", hash = "sha256:dbf2d5a755b470e64e5e2762b56f8d56313787e4c7d71a87fe25c33f48eb3493"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.48b0"
+opentelemetry-semantic-conventions = "0.48b0"
+packaging = ">=21.0"
+wrapt = ">=1.11.2"
+
+[package.extras]
+instruments = ["sqlalchemy"]
+
+[[package]]
+name = "opentelemetry-instrumentation-starlette"
+version = "0.48b0"
+description = "OpenTelemetry Starlette Instrumentation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "opentelemetry_instrumentation_starlette-0.48b0-py3-none-any.whl", hash = "sha256:6751fe1d42b60f958c5e7283485e748f7467f8952bc9c76907c45e77a48f8ccf"},
+    {file = "opentelemetry_instrumentation_starlette-0.48b0.tar.gz", hash = "sha256:24560c9dc345e9293df28731fd02b3347dc9ec5e87f6bd247e0160555659f55e"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.48b0"
+opentelemetry-instrumentation-asgi = "0.48b0"
+opentelemetry-semantic-conventions = "0.48b0"
+opentelemetry-util-http = "0.48b0"
+
+[package.extras]
+instruments = ["starlette (>=0.13.0,<0.14.0)"]
 
 [[package]]
 name = "opentelemetry-proto"
@@ -3635,4 +3743,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "77f42fc5a98d9c71fe732d8850b2c77920a3971e81bbef19e6f9f10b31e4db06"
+content-hash = "3cf558e450f7224252f624cbf576bfc9179ff0772d45583345d973bef23f641d"
