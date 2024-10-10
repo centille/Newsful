@@ -3,16 +3,20 @@ from schemas.schemas import (
     FactCheckLabel,
     FactCheckResponse,
     GPTFactCheckModel,
+    GPTGeneratedSummary,
     HealthResponse,
     ImageInputData,
     TextInputData,
+    User,
 )
 
 __all__ = [
-    "GPTFactCheckModel",
-    "FactCheckResponse",
     "FactCheckLabel",
+    "FactCheckResponse",
+    "GPTFactCheckModel",
+    "GPTGeneratedSummary",
     "HealthResponse",
     "ImageInputData",
     "TextInputData",
+    "User",
 ]

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseModel
+from pydantic import AnyHttpUrl, BaseModel, EmailStr
 
 
 class TextInputData(BaseModel):
@@ -42,6 +42,10 @@ class GPTFactCheckModel(BaseModel):
     explanation: str
 
 
+class GPTGeneratedSummary(BaseModel):
+    summary: str
+
+
 class HealthResponse(BaseModel):
     """The response model for the health check endpoint"""
 
@@ -62,3 +66,11 @@ class FactCheckResponse(BaseModel):
     updatedAt: float = datetime.now().timestamp()
     isGovernmentRelated: bool = False
     response: str
+
+
+class User(BaseModel):
+    """The user model for fastapi security"""
+
+    email: EmailStr
+    first_name: str
+    last_name: str

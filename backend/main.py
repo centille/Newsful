@@ -1,6 +1,5 @@
-import io
+#!/usr/bin/env python
 import os
-import warnings
 
 import logfire
 import pytesseract  # type: ignore
@@ -8,18 +7,18 @@ import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from openai import AsyncOpenAI
 
-from core import fact_check_process, get_image, summarize, to_english, db_is_working
+from core import db_is_working, fact_check_process, get_image, summarize, to_english
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
 
 # Load environment variables
 load_dotenv()
 
-# Suppress warnings
-warnings.filterwarnings("ignore")
 
 # Global variables
-DEBUG = os.environ.get("ENV", "dev") == "dev"
+ENV = os.environ.get("ENV", "dev")
+DEBUG = ENV == "dev"
 URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 
 # FastAPI app
@@ -30,18 +29,22 @@ app = FastAPI(
     version="0.1.0",
 )
 
+if not DEBUG:
+    import warnings
+
+    warnings.filterwarnings("ignore")
+
 # FastAPI CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST"],
     allow_origins=["*"],
     allow_headers=["*"],
 )
 
+# Logfire logging
 logfire.configure()
-logfire.instrument_fastapi(app, record_send_receive=True)
-logfire.instrument_pymongo()
-logfire.instrument_pydantic()
+logfire.instrument_fastapi(app, capture_headers=True, record_send_receive=True)
 
 
 @app.get("/health/")

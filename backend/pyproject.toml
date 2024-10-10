@@ -25,17 +25,12 @@ pymongo = {extras = ["srv"], version = "^4.10.1"}
 python-dotenv = "^1.0.0"
 uvicorn = "^0.23.1"
 openai = "^1.51.0"
-google-api-python-client = "^2.94.0"
 deep-translator = "^1.11.4"
 pytesseract = "^0.3.10"
 ujson = "^5.10.0"
 pydantic = "^2.9.2"
-langchain = "^0.3.1"
-langchain-core = "^0.3.7"
-langchain-openai = "^0.2.1"
-langchain-community = "^0.3.1"
-langchain-google-community = "^2.0.0"
-logfire = {extras = ["aiohttp", "fastapi", "httpx", "pymongo", "requests", "sqlalchemy", "starlette"], version = "^1.0.1"}
+logfire = {extras = ["fastapi"], version = "^1.0.1"}
+instructor = "^1.5.2"
 
 [tool.black]
 line-length = 120

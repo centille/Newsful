@@ -22,7 +22,7 @@ def add_to_db(uri: str, data: FactCheckResponse):
 
     # Add object to DB
     client = MongoClient(uri)  # type: ignore
-    collection = client["NewsFul"]["articles"]  # type: ignore
+    collection = client["newsful"]["articles"]  # type: ignore
     collection.insert_one(data.model_dump())  # type: ignore
     client.close()
 
@@ -32,7 +32,7 @@ def fetch_from_db_if_exists(
     data: TextInputData,
 ) -> Union[FactCheckResponse, None]:
     """
-    fact_checker checks the data against the database.
+    fetch_from_db_if_exists checks the data against the database.
 
     Parameters
     ----------
@@ -43,19 +43,15 @@ def fetch_from_db_if_exists(
 
     Returns
     -------
-    FactCheckResponse
-        The result of the fact check.
-    bool
-        Whether the data was found in the database.
+    FactCheckResponse | None
+        The result of the fact check, if present. Otherwise, return None.
     """
 
-    url = data.url
+    url = str(data.url or "")
     summary: str = data.content
 
-    # check if connection is working
     client = MongoClient(uri)  # type: ignore
-    collection = client["NewsFul"]["articles"]  # type: ignore
-    assert client.admin.command("ping")["ok"] == 1  # type: ignore
+    collection = client["newsful"]["articles"]  # type: ignore
 
     # fetch from database if exists
     res = collection.find_one({"url": url, "summary": summary})  # type: ignore
