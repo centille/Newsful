@@ -1,7 +1,4 @@
-from typing import Any, Dict, List
-
 import pandas as pd
-from langchain_google_community import GoogleSearchAPIWrapper  # type: ignore
 from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
@@ -61,12 +58,3 @@ def archive_url(url: AnyHttpUrl) -> str | None:
         return save_api.save()
     except MaximumSaveRetriesExceeded:
         return None
-
-
-def get_top_google_results(query: str, count: int = 5) -> list[AnyHttpUrl]:
-    """returns the top google search results for the given query."""
-
-    google_search = GoogleSearchAPIWrapper(search_engine="google")
-    results: List[Dict[str, Any]] = google_search.results(query, count)  # type: ignore
-    result_links = [result["link"] for result in results]
-    return result_links

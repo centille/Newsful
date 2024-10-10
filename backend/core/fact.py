@@ -7,12 +7,13 @@ import requests
 import ujson
 
 from core.db import add_to_db, fetch_from_db_if_exists
-from core.postprocessors import archive_url, get_top_google_results, is_safe
+from core.postprocessors import archive_url, is_safe
 from core.preprocessors import is_government_related
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 
 
 def search_tool(query: str, num_results: int = 3):
+    """Tool to search via Google CSE"""
     api_key = os.getenv("GOOGLE_API_KEY", "")
     cx = os.getenv("GOOGLE_CSE_ID", "")
     url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}&num={num_results}"
@@ -94,7 +95,9 @@ async def fact_check_with_gpt(data: TextInputData) -> GPTFactCheckModel:
             function_call={"name": "provide_fact_check"},
         )
 
-        return GPTFactCheckModel.model_validate_json(final_response.choices[0].message.function_call.arguments)
+        gpt_resp = GPTFactCheckModel.model_validate_json(final_response.choices[0].message.function_call.arguments)  # type: ignore
+        gpt_resp.sources = list(map(lambda x: x["link"], search_results["items"]))
+        return gpt_resp
     # If no function was called, parse the response directly
     return GPTFactCheckModel.model_validate_json(message.content or "")
 
@@ -128,7 +131,7 @@ async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal[
         label=fact_check_resp.label,
         response=fact_check_resp.explanation,
         summary=text_data.content,
-        references=get_top_google_results(fact_check_resp.explanation),
+        references=fact_check_resp.sources,
         url=text_data.url,
         dataType=dtype,
         isGovernmentRelated=is_government_related(text_data.content),

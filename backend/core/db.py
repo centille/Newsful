@@ -1,5 +1,6 @@
 from typing import Union
 
+import ujson
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
@@ -23,7 +24,7 @@ def add_to_db(uri: str, data: FactCheckResponse):
     # Add object to DB
     client = MongoClient(uri)  # type: ignore
     collection = client["newsful"]["articles"]  # type: ignore
-    collection.insert_one(data.model_dump())  # type: ignore
+    collection.insert_one(ujson.loads(data.model_dump_json()))  # type: ignore
     client.close()
 
 

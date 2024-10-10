@@ -40,6 +40,7 @@ class GPTFactCheckModel(BaseModel):
 
     label: FactCheckLabel
     explanation: str
+    sources: list[AnyHttpUrl] = []
 
 
 class GPTGeneratedSummary(BaseModel):

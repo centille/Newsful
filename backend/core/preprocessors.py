@@ -50,7 +50,18 @@ async def summarize(text: str) -> str:
 def is_government_related(text: str) -> bool:
     """checks if the text is related to the government."""
     words = split_to_words(text)
-    gov_rel_words = ("india", "government", "indian")
+    gov_rel_words = (
+        "india",
+        "government",
+        "indian",
+        "state",
+        "union",
+        "president",
+        "minister",
+        "elections",
+        "election",
+        "congress",
+    )
     return any(word in gov_rel_words for word in words)
 
 
