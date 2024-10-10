@@ -34,7 +34,7 @@ def is_credible(url: AnyHttpUrl) -> bool:
     if not str(url).startswith("https://"):
         return False
 
-    safe_tlds: list[str] = [".gov", ".org", ".edu", ".gov.in"]
+    safe_tlds = (".gov", ".org", ".edu", ".gov.in")
     if any(domain.endswith(tld) for tld in safe_tlds):
         return True
     return is_phishing(url)
@@ -42,7 +42,7 @@ def is_credible(url: AnyHttpUrl) -> bool:
 
 def is_safe(url: AnyHttpUrl) -> bool:
     """Checks is the URL is credible and not a phishing URL."""
-    return not is_phishing(url) and is_credible(url)
+    return is_credible(url) and not is_phishing(url)
 
 
 def archive_url(url: AnyHttpUrl) -> str | None:

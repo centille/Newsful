@@ -2,14 +2,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseModel, EmailStr
+from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field
 
 
 class TextInputData(BaseModel):
     """input format for text fact checking endpoint"""
 
-    url: AnyHttpUrl | None
-    content: str
+    url: AnyHttpUrl | None = Field(None, description="The url of the article")
+    content: str = Field(None, description="The content of the article")
 
     class Config:
         json_schema_extra = {
@@ -23,8 +23,8 @@ class TextInputData(BaseModel):
 class ImageInputData(BaseModel):
     """input format for image fact checking endpoint"""
 
-    url: AnyHttpUrl
-    picture_url: AnyHttpUrl
+    url: AnyHttpUrl = Field(None, description="The url of the image")
+    picture_url: AnyHttpUrl = Field(None, description="The url of the image")
 
 
 class FactCheckLabel(str, Enum):
@@ -36,37 +36,38 @@ class FactCheckLabel(str, Enum):
 
 
 class GPTFactCheckModel(BaseModel):
-    """expected resulkt format from OpenAI for fact checking"""
+    """expected result format from OpenAI for fact checking"""
 
-    label: FactCheckLabel
-    explanation: str
-    sources: list[AnyHttpUrl] = []
+    label: FactCheckLabel = Field(None, description="The label of the fact check")
+    explanation: str = Field(None, description="The explanation of the fact check")
+    sources: list[AnyHttpUrl] = Field([], description="The sources of the fact check")
 
 
 class GPTGeneratedSummary(BaseModel):
-    summary: str
+    """The model for summarization"""
+
+    summary: str = Field(None, description="The summary of the article")
 
 
 class HealthResponse(BaseModel):
     """The response model for the health check endpoint"""
 
-    database_is_working: bool = True
+    database_is_working: bool = Field(True, description="Whether the database is working")
 
 
 class FactCheckResponse(BaseModel):
     """The response model for the fact check endpoint"""
 
-    url: AnyHttpUrl | None
-    dataType: Literal["text", "image"]
-    label: FactCheckLabel
-    archive: str | None = None
-    summary: str
-    response: str
-    references: list[AnyHttpUrl] = []
-    isSafe: bool = False
-    updatedAt: float = datetime.now().timestamp()
-    isGovernmentRelated: bool = False
-    response: str
+    url: AnyHttpUrl | None = Field(None, description="The url of the article")
+    dataType: Literal["text", "image"] = Field(None, description="The type of data")
+    label: FactCheckLabel = Field(None, description="The label of the fact check")
+    summary: str = Field(None, description="The summary of the claim")
+    response: str = Field(None, description="The logical explanation of the fact check")
+    isSafe: bool = Field(False, description="Whether the article is safe")
+    archive: str | None = Field(None, description="The archive url of the site")
+    references: list[AnyHttpUrl] = Field([], description="The references of the fact check")
+    updatedAt: datetime = Field(default_factory=datetime.now, description="The time of the last update")
+    isGovernmentRelated: bool = Field(False, description="Whether the claim is related to government")
 
 
 class User(BaseModel):

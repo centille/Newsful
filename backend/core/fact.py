@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from typing import Literal
 
 import openai
@@ -128,15 +127,14 @@ async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal[
 
     # assign to right variable
     fact_check = FactCheckResponse(
+        url=text_data.url,
+        dataType=dtype,
         label=fact_check_resp.label,
         response=fact_check_resp.explanation,
         summary=text_data.content,
         references=fact_check_resp.sources,
-        url=text_data.url,
-        dataType=dtype,
         isGovernmentRelated=is_government_related(text_data.content),
         isSafe=is_safe(text_data.url) if text_data.url is not None else False,
-        updatedAt=datetime.now().timestamp(),
         archive=None,
     )
 
