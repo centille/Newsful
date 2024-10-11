@@ -27,7 +27,6 @@ class ImageInputData(BaseModel):
     """input format for image fact checking endpoint"""
 
     url: AnyHttpUrl = Field(None, description="The url of the image")
-    picture_url: AnyHttpUrl = Field(None, description="The url of the image")
 
 
 class FactCheckLabel(str, Enum):

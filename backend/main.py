@@ -67,8 +67,8 @@ async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -
 
     pytesseract.pytesseract.tesseract_cmd = os.environ.get("TESSERACT_PATH")
 
-    pic_url_str = str(data.picture_url)
-    response: requests.Response = requests.get(pic_url_str, allow_redirects=True, timeout=15)
+    pic_url_str = str(data.url)
+    response = requests.get(pic_url_str, allow_redirects=True, timeout=15)
     response.raise_for_status()
     image = get_image(pic_url_str)
     res = pytesseract.image_to_string(image)  # type: ignore
