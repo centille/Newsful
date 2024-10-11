@@ -1,34 +1,37 @@
 from typing import Union
 
 import ujson
-from pymongo import MongoClient
+from pymongo import AsyncMongoClient
 from pymongo.errors import PyMongoError
 
 from schemas import FactCheckResponse, TextInputData
 
 
-def db_is_working(uri: str):
+async def db_is_working(uri: str):
     """Checks if the database is working."""
     try:
-        client = MongoClient(uri)  # type: ignore
-        assert client.admin.command("ping")["ok"] == 1  # type: ignore
-        client.close()
+        client = AsyncMongoClient(uri)  # type: ignore
+        assert await client.admin.command("ping")["ok"] == 1  # type: ignore
+        await client.close()
         return True
     except (PyMongoError, AssertionError):
         return False
 
 
-def add_to_db(uri: str, data: FactCheckResponse):
+async def add_to_db(uri: str, data: FactCheckResponse):
     """adds the Pydantic object to the mongo database"""
 
-    # Add object to DB
-    client = MongoClient(uri)  # type: ignore
-    collection = client["newsful"]["articles"]  # type: ignore
-    collection.insert_one(ujson.loads(data.model_dump_json()))  # type: ignore
-    client.close()
+    try:
+        # Add object to DB
+        client = AsyncMongoClient(uri)  # type: ignore
+        collection = client["newsful"]["articles"]  # type: ignore
+        await collection.insert_one(ujson.loads(data.model_dump_json()))  # type: ignore
+        await client.close()
+    except PyMongoError:
+        pass
 
 
-def fetch_from_db_if_exists(
+async def fetch_from_db_if_exists(
     uri: str,
     data: TextInputData,
 ) -> Union[FactCheckResponse, None]:
@@ -51,12 +54,12 @@ def fetch_from_db_if_exists(
     url = str(data.url or "")
     summary: str = data.content
 
-    client = MongoClient(uri)  # type: ignore
+    client = AsyncMongoClient(uri)  # type: ignore
     collection = client["newsful"]["articles"]  # type: ignore
 
     # fetch from database if exists
-    res = collection.find_one({"url": url, "summary": summary})  # type: ignore
-    client.close()
+    res = await collection.find_one({"url": url, "summary": summary})  # type: ignore
+    await client.close()
 
     if res is not None:
         return FactCheckResponse.model_validate(res)

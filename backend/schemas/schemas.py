@@ -11,13 +11,16 @@ class TextInputData(BaseModel):
     url: AnyHttpUrl | None = Field(None, description="The url of the article")
     content: str = Field(None, description="The content of the article")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "url": "https://www.google.com",
-                "content": "This is a test",
-            }
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "url": "https://www.google.com",
+                    "content": "This is a test",
+                }
+            ]
         }
+    }
 
 
 class ImageInputData(BaseModel):
@@ -59,11 +62,11 @@ class FactCheckResponse(BaseModel):
     """The response model for the fact check endpoint"""
 
     url: AnyHttpUrl | None = Field(None, description="The url of the article")
-    dataType: Literal["text", "image"] = Field(None, description="The type of data")
-    label: FactCheckLabel = Field(None, description="The label of the fact check")
-    summary: str = Field(None, description="The summary of the claim")
-    response: str = Field(None, description="The logical explanation of the fact check")
-    isSafe: bool = Field(False, description="Whether the article is safe")
+    dataType: Literal["text", "image"] = Field(description="The type of data")
+    label: FactCheckLabel = Field(description="The label of the fact check")
+    summary: str = Field(description="The summary of the claim")
+    response: str = Field(description="The logical explanation of the fact check")
+    isSafe: bool = Field(description="Whether the article is safe")
     archive: str | None = Field(None, description="The archive url of the site")
     references: list[AnyHttpUrl] = Field([], description="The references of the fact check")
     updatedAt: datetime = Field(default_factory=datetime.now, description="The time of the last update")

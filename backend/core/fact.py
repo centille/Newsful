@@ -5,7 +5,7 @@ import openai
 import requests
 import ujson
 
-from core.db import add_to_db, fetch_from_db_if_exists
+from core.db import fetch_from_db_if_exists
 from core.postprocessors import archive_url, is_safe
 from core.preprocessors import is_government_related
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
@@ -21,7 +21,7 @@ def search_tool(query: str, num_results: int = 3):
     return resp.json()
 
 
-async def fact_check_with_gpt(data: TextInputData) -> GPTFactCheckModel:
+async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -> GPTFactCheckModel:
     """
     fact_check_with_gpt checks the data against the OpenAI API.
 
@@ -37,7 +37,6 @@ async def fact_check_with_gpt(data: TextInputData) -> GPTFactCheckModel:
     """
 
     claim = data.content
-    client = openai.AsyncOpenAI()
 
     response = await client.chat.completions.create(
         model="gpt-4",
@@ -101,7 +100,9 @@ async def fact_check_with_gpt(data: TextInputData) -> GPTFactCheckModel:
     return GPTFactCheckModel.model_validate_json(message.content or "")
 
 
-async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal["image", "text"]) -> FactCheckResponse:
+async def fact_check_process(
+    client: openai.AsyncOpenAI, text_data: TextInputData, uri: str, dtype: Literal["image", "text"]
+) -> FactCheckResponse:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -119,11 +120,11 @@ async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal[
     FactCheckResponse
         The result of the fact check.
     """
-    fact_check_ = fetch_from_db_if_exists(uri, text_data)
+    fact_check_ = await fetch_from_db_if_exists(uri, text_data)
     if fact_check_ is not None:
         return fact_check_
 
-    fact_check_resp = await fact_check_with_gpt(text_data)
+    fact_check_resp = await fact_check_with_gpt(client, text_data)
 
     # assign to right variable
     fact_check = FactCheckResponse(
@@ -142,5 +143,4 @@ async def fact_check_process(text_data: TextInputData, uri: str, dtype: Literal[
     if fact_check.label != FactCheckLabel.CORRECT and fact_check.url is not None:
         fact_check.archive = archive_url(fact_check.url)
 
-    add_to_db(uri, fact_check)
     return fact_check

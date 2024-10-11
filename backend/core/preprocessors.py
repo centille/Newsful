@@ -25,12 +25,12 @@ def num_of_tokens(text: str) -> int:
     return len(tiktokens.encode(text))
 
 
-async def summarize(text: str) -> str:
+async def summarize(client: AsyncOpenAI, text: str) -> str:
     """summarizes the text via OpenAI."""
     if num_of_tokens(text) <= 200:
         return text
-    client = instructor.from_openai(AsyncOpenAI())
-    response = await client.chat.completions.create(
+    client_ = instructor.from_openai(client)
+    response = await client_.chat.completions.create(
         model="gpt-4o-mini",
         response_model=GPTGeneratedSummary,
         messages=[

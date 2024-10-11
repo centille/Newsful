@@ -5,11 +5,11 @@ import logfire
 import pytesseract  # type: ignore
 import requests
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 
-from core import db_is_working, fact_check_process, get_image, summarize, to_english
+from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
 
 # Load environment variables
@@ -28,11 +28,7 @@ app = FastAPI(
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.1.0",
 )
-
-if not DEBUG:
-    import warnings
-
-    warnings.filterwarnings("ignore")
+client = AsyncOpenAI()
 
 # FastAPI CORS
 app.add_middleware(
@@ -45,25 +41,28 @@ app.add_middleware(
 # Logfire logging
 logfire.configure()
 logfire.instrument_fastapi(app, capture_headers=True, record_send_receive=True)
+logfire.instrument_openai(client)
 
 
 @app.get("/health/")
-def health() -> HealthResponse:
+async def health() -> HealthResponse:
     """Health check endpoint."""
 
-    return HealthResponse(database_is_working=db_is_working(URI))
+    return HealthResponse(database_is_working=await db_is_working(URI))
 
 
 @app.post("/verify/text/")
-async def verify_news(data: TextInputData) -> FactCheckResponse:
+async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) -> FactCheckResponse:
     """Endpoint to verify a news article."""
 
-    data.content = await summarize(to_english(data.content))
-    return await fact_check_process(data, URI, "text")
+    data.content = await summarize(client, to_english(data.content))
+    fact_check = await fact_check_process(client, data, URI, "text")
+    background_tasks.add_task(add_to_db, URI, fact_check)
+    return fact_check
 
 
 @app.post("/verify/image/")
-async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
+async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -> FactCheckResponse:
     """Endpoint to check if an image is fake."""
 
     pytesseract.pytesseract.tesseract_cmd = os.environ.get("TESSERACT_PATH")
@@ -80,5 +79,6 @@ async def image_check(data: ImageInputData) -> FactCheckResponse | bool:
         content=text,
     )
 
-    print(text_data.model_dump_json())
-    return await fact_check_process(text_data, URI, "image")
+    fact_check = await fact_check_process(client, text_data, URI, "image")
+    background_tasks.add_task(add_to_db, URI, fact_check)
+    return fact_check
