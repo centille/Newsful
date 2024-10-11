@@ -1,4 +1,5 @@
-// Create a menu Item in the right click context menu of the browser
+const BASE_URL = 'http://localhost:8000';
+
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "extractText",
@@ -16,17 +17,12 @@ const createPopup = async () => {
         height: 600,
         focused: true
     });
-
-    // Shift focus to the popup window
     await chrome.windows.update(window.id, { focused: true });
 };
 
-// Function to handle API requests
 const handleApiRequest = async (endpoint, data) => {
-    const BASE_URL = 'http://localhost:8000';
-    // TODO: check API working via BASE_URL/api/health endpoint
     try {
-        const response = await fetch(`${BASE_URL}/api/verify/${endpoint}`, {
+        const response = await fetch(`${BASE_URL}/verify/${endpoint}`, {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
@@ -37,6 +33,7 @@ const handleApiRequest = async (endpoint, data) => {
         chrome.runtime.sendMessage({ action: "displayResponse", data: json });
     } catch (error) {
         console.error('API request failed:', error);
+        chrome.runtime.sendMessage({ action: "displayError", error: error.message });
     }
 };
 
@@ -69,8 +66,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     picture_url: "${info.srcUrl}",
                     url: window.location.href
                 }
-            });` : `chrome.runtime.sendMessage({
-            action: "verifyText",
+            });`
+            : `chrome.runtime.sendMessage({
+                action: "verifyText",
                 data: {
                     content: window.getSelection().toString(),
                     url: window.location.href
