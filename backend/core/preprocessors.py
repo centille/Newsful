@@ -3,7 +3,7 @@ from io import BytesIO
 import instructor
 import requests
 import tiktoken
-from deep_translator import GoogleTranslator  # type: ignore
+from deep_translator.google import GoogleTranslator  # type: ignore
 from openai import AsyncOpenAI
 from PIL import Image
 from PIL.ImageFile import ImageFile
@@ -29,22 +29,27 @@ async def summarize(client: AsyncOpenAI, text: str) -> str:
     """summarizes the text via OpenAI."""
     if num_of_tokens(text) <= 200:
         return text
-    client_ = instructor.from_openai(client)
-    response = await client_.chat.completions.create(
-        model="gpt-4o-mini",
-        response_model=GPTGeneratedSummary,
-        messages=[
-            {
-                "role": "system",
-                "content": "Generate a concise summary in the language of the article. ",
-            },
-            {
-                "role": "user",
-                "content": f"Summarize the following text in a concise way:\n{text}",
-            },
-        ],
-    )  # type: ignore
-    return response.summary
+    try:
+        # client_ = instructor.from_openai(client)
+        client_ = instructor.from_openai(client)
+        response = await client_.chat.completions.create(
+            model="gpt-4o-mini",
+            response_model=GPTGeneratedSummary,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Generate a concise summary in the language of the article. ",
+                },
+                {
+                    "role": "user",
+                    "content": f"Summarize the following text in a concise way:\n{text}",
+                },
+            ],
+        )  # type: ignore
+        assert isinstance(response, GPTGeneratedSummary)
+        return response.summary
+    except AssertionError:
+        return text
 
 
 def is_government_related(text: str) -> bool:
