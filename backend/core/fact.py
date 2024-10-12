@@ -2,12 +2,12 @@ import os
 from typing import Literal
 
 import openai
+from pymongo import AsyncMongoClient
 import requests
 import ujson
 
 from core.db import fetch_from_db_if_exists
 from core.postprocessors import archive_url, is_safe
-from core.preprocessors import is_government_related
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 
 
@@ -15,7 +15,8 @@ def search_tool(query: str, num_results: int = 3):
     """Tool to search via Google CSE"""
     api_key = os.getenv("GOOGLE_API_KEY", "")
     cx = os.getenv("GOOGLE_CSE_ID", "")
-    url = f"https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}&num={num_results}"
+    base_url = "https://www.googleapis.com/customsearch/v1"
+    url = f"{base_url}?key={api_key}&cx={cx}&q={query}&num={num_results}"
     resp = requests.get(url, timeout=15)
     resp.raise_for_status()
     return resp.json()
@@ -39,11 +40,11 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
     claim = data.content
 
     response = await client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
-                "content": "You are a fact checker. Using the Google search tool provided, check if the following text is true.",
+                "content": "I want you to act as a fact-check researcher. You will be given a claim and you have should search the information on Google to help in the fact checking.",
             },
             {
                 "role": "user",
@@ -56,7 +57,10 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
                 "description": "Search Google for fact-checking information",
                 "parameters": {
                     "type": "object",
-                    "properties": {"query": {"type": "string"}, "num_results": {"type": "integer", "default": 3}},
+                    "properties": {
+                        "query": {"type": "string"},
+                        "num_results": {"type": "integer", "default": 3},
+                    },
                     "required": ["query"],
                 },
             }
@@ -72,15 +76,15 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
 
         # Send the search results back to GPT for analysis
         final_response = await client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a fact checker. Analyze the search results and provide a fact check response.",
+                    "content": "I want you to act as a fact checker. You will be given a statement along with relevant search results and you are supposed to provide a fact check based on them. You need to classify the claim as correct, incorrect, or misleading and provide the logical explanation along with the sources you used.",
                 },
                 {
                     "role": "user",
-                    "content": f"Original statement: {claim}\n\nSearch results: {ujson.dumps(search_results)}",
+                    "content": f"Original statement: {claim}\n\nSearch results: {ujson.dumps(search_results, escape_forward_slashes=False)}",
                 },
             ],
             functions=[
@@ -101,7 +105,10 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
 
 
 async def fact_check_process(
-    client: openai.AsyncOpenAI, text_data: TextInputData, uri: str, dtype: Literal["image", "text"]
+    client: openai.AsyncOpenAI,
+    text_data: TextInputData,
+    mongo_client: AsyncMongoClient,
+    dtype: Literal["image", "text"],
 ) -> FactCheckResponse:
     """
     fact_check_process checks the data against the OpenAI API.
@@ -120,7 +127,7 @@ async def fact_check_process(
     FactCheckResponse
         The result of the fact check.
     """
-    fact_check_ = await fetch_from_db_if_exists(uri, text_data)
+    fact_check_ = await fetch_from_db_if_exists(mongo_client, text_data)
     if fact_check_ is not None:
         return fact_check_
 
@@ -134,7 +141,6 @@ async def fact_check_process(
         response=fact_check_resp.explanation,
         summary=text_data.content,
         references=fact_check_resp.sources,
-        isGovernmentRelated=is_government_related(text_data.content),
         isSafe=is_safe(text_data.url) if text_data.url is not None else False,
         archive=None,
     )

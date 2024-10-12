@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 from PIL import Image
 from PIL.ImageFile import ImageFile
 
-from core.utils import clean_text, split_to_words
+from core.utils import clean_text
 from schemas import GPTGeneratedSummary
 
 
@@ -50,24 +50,6 @@ async def summarize(client: AsyncOpenAI, text: str) -> str:
         return response.summary
     except AssertionError:
         return text
-
-
-def is_government_related(text: str) -> bool:
-    """checks if the text is related to the government."""
-    words = split_to_words(text)
-    gov_rel_words = (
-        "india",
-        "government",
-        "indian",
-        "state",
-        "union",
-        "president",
-        "minister",
-        "elections",
-        "election",
-        "congress",
-    )
-    return any(word in gov_rel_words for word in words)
 
 
 def get_image(image_url: str) -> ImageFile:

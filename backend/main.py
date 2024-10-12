@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import os
+from contextlib import asynccontextmanager
 
 import logfire
+from pymongo import AsyncMongoClient
 import pytesseract  # type: ignore
 import requests
 from dotenv import load_dotenv
@@ -21,14 +23,31 @@ ENV = os.environ.get("ENV", "dev")
 DEBUG = ENV == "dev"
 URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 
+
+oai_client = AsyncOpenAI()
+mongo_client = AsyncMongoClient(URI)  # type: ignore
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manages the lifespan of the FastAPI app."""
+    print("Lifespan starting...")
+    await mongo_client.aconnect()
+    print("Lifespan started")
+    yield
+    print("Lifespan ending...")
+    await mongo_client.aclose()
+    print("Lifespan ended")
+
+
 # FastAPI app
 app = FastAPI(
     debug=DEBUG,
     title="Newsful API",
     description="API for Newsful - a news summarization and fact checking app.",
     version="0.1.0",
+    lifespan=lifespan,
 )
-client = AsyncOpenAI()
 
 # FastAPI CORS
 app.add_middleware(
@@ -41,23 +60,23 @@ app.add_middleware(
 # Logfire logging
 logfire.configure()
 logfire.instrument_fastapi(app, capture_headers=True, record_send_receive=True)
-logfire.instrument_openai(client)
+# logfire.instrument_openai(client)
 
 
 @app.get("/health/")
 async def health() -> HealthResponse:
     """Health check endpoint."""
 
-    return HealthResponse(database_is_working=await db_is_working(URI))
+    return HealthResponse(database_is_working=await db_is_working(mongo_client))
 
 
 @app.post("/verify/text/")
 async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) -> FactCheckResponse:
     """Endpoint to verify a news article."""
 
-    data.content = await summarize(client, to_english(data.content))
-    fact_check = await fact_check_process(client, data, URI, "text")
-    background_tasks.add_task(add_to_db, URI, fact_check)
+    data.content = await summarize(oai_client, to_english(data.content))
+    fact_check = await fact_check_process(oai_client, data, mongo_client, "text")
+    background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check
 
 
@@ -79,6 +98,6 @@ async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -
         content=text,
     )
 
-    fact_check = await fact_check_process(client, text_data, URI, "image")
-    background_tasks.add_task(add_to_db, URI, fact_check)
+    fact_check = await fact_check_process(oai_client, text_data, mongo_client, "image")
+    background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check

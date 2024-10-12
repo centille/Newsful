@@ -7,32 +7,28 @@ from pymongo.errors import PyMongoError
 from schemas import FactCheckResponse, TextInputData
 
 
-async def db_is_working(uri: str):
+async def db_is_working(client: AsyncMongoClient):
     """Checks if the database is working."""
+
     try:
-        client = AsyncMongoClient(uri)  # type: ignore
-        assert await client.admin.command("ping")["ok"] == 1  # type: ignore
-        await client.close()
-        return True
-    except (PyMongoError, AssertionError):
+        return (await client["newsful"].command("ping"))["ok"] == 1  # type: ignore
+    except PyMongoError:
         return False
 
 
-async def add_to_db(uri: str, data: FactCheckResponse):
+async def add_to_db(client: AsyncMongoClient, data: FactCheckResponse):
     """adds the Pydantic object to the mongo database"""
 
     try:
         # Add object to DB
-        client = AsyncMongoClient(uri)  # type: ignore
         collection = client["newsful"]["articles"]  # type: ignore
         await collection.insert_one(ujson.loads(data.model_dump_json()))  # type: ignore
-        await client.close()
     except PyMongoError:
         pass
 
 
 async def fetch_from_db_if_exists(
-    uri: str,
+    client: AsyncMongoClient,
     data: TextInputData,
 ) -> Union[FactCheckResponse, None]:
     """
@@ -51,16 +47,16 @@ async def fetch_from_db_if_exists(
         The result of the fact check, if present. Otherwise, return None.
     """
 
-    url = str(data.url or "")
-    summary: str = data.content
+    try:
+        summary: str = data.content
 
-    client = AsyncMongoClient(uri)  # type: ignore
-    collection = client["newsful"]["articles"]  # type: ignore
+        collection = client["newsful"]["articles"]  # type: ignore
 
-    # fetch from database if exists
-    res = await collection.find_one({"url": url, "summary": summary})  # type: ignore
-    await client.close()
+        # fetch from database if exists
+        res = await collection.find_one({"summary": summary})  # type: ignore
 
-    if res is not None:
-        return FactCheckResponse.model_validate(res)
-    return None
+        if res is not None:
+            return FactCheckResponse.model_validate(res)
+        return None
+    except PyMongoError:
+        return None

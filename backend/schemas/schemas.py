@@ -69,7 +69,6 @@ class FactCheckResponse(BaseModel):
     archive: str | None = Field(None, description="The archive url of the site")
     references: list[AnyHttpUrl] = Field([], description="The references of the fact check")
     updatedAt: datetime = Field(default_factory=datetime.now, description="The time of the last update")
-    isGovernmentRelated: bool = Field(False, description="Whether the claim is related to government")
 
 
 class User(BaseModel):
