@@ -8,8 +8,10 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
 
 - [Python 3](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/docs/#installation)
-- [OpenAI API Key](https://openai.com/) - $20 per month
-- [Serper API Key](https://serper.dev/) - $0.3 per 1000 requests
+- [OpenAI API Key](https://openai.com/)
+- [MongoDB](https://www.mongodb.com/)
+- [Tesseract-OCR](https://github.com/tesseract-ocr/tesseract)
+- [Google CSE](https://programmablesearchengine.google.com/about/)
 
 ## Installation
 
