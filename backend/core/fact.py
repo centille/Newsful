@@ -6,7 +6,7 @@ from pymongo import AsyncMongoClient
 import requests
 import ujson
 
-from core.db import fetch_from_db_if_exists
+from core.db import fetch_from_db_if_exists  # type: ignore
 from core.postprocessors import archive_url, is_safe
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 

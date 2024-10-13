@@ -11,7 +11,7 @@ from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
 
-from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english
+from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english  # type: ignore
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
 
 # Load environment variables
