@@ -1,20 +1,12 @@
 [tool.poetry]
 name = "newsful"
 version = "0.1.0"
-description = "The Backend API for Newsful - A Fact Checking Browser Plugin"
-authors = [
-    "Siddhesh Agarwal <siddhesh.agarwal@gmail.com>",
-    "Rithik Raj <rithu0644@gmail.com>",
-]
+description = "The Backend API for Newsful Browser Plugin"
+authors = ["Siddhesh Agarwal <siddhesh.agarwal@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/centille/Newsful/"
 license = "GPL-3.0-only"
-keywords = ["news", "fact-checking", "fake-news", "newsful", "newsful-backend"]
 build = "poetry.core.masonry.api.build"
-maintainers = [
-    "Siddhesh Agarwal <siddhesh.agarwal@gmail.com>",
-    "Rithik Raj <rithu0644@gmail.com"
-]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
