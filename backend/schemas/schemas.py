@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field
 
@@ -8,19 +8,8 @@ from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field
 class TextInputData(BaseModel):
     """input format for text fact checking endpoint"""
 
-    url: AnyHttpUrl | None = Field(None, description="The url of the article")
+    url: Optional[AnyHttpUrl] = Field(None, description="The url of the article")
     content: str = Field(None, description="The content of the article")
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "url": "https://www.google.com",
-                    "content": "This is a test",
-                }
-            ]
-        }
-    }
 
 
 class ImageInputData(BaseModel):

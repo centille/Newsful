@@ -17,7 +17,7 @@ def clean_text(text: str) -> str:
     str
         The optimized text.
     """
-    return text.strip().replace("\n", " ").replace("\t", " ").replace("\r", " ").rstrip(".")
+    return " ".join(text.split()).rstrip(".")
 
 
 def get_domain(url: AnyHttpUrl) -> str:

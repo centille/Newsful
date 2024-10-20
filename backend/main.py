@@ -3,13 +3,13 @@ import os
 from contextlib import asynccontextmanager
 
 import logfire
-from pymongo import AsyncMongoClient
 import pytesseract  # type: ignore
 import requests
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from openai import AsyncOpenAI
+from pymongo import AsyncMongoClient
 
 from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english  # type: ignore
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
@@ -75,8 +75,9 @@ async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) ->
     """Endpoint to verify a news article."""
 
     data.content = await summarize(oai_client, to_english(data.content))
-    fact_check = await fact_check_process(oai_client, data, mongo_client, "text")
-    background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
+    fact_check, is_present_in_db = await fact_check_process(oai_client, data, mongo_client, "text")
+    if not is_present_in_db:
+        background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check
 
 
@@ -98,6 +99,7 @@ async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -
         content=text,
     )
 
-    fact_check = await fact_check_process(oai_client, text_data, mongo_client, "image")
-    background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
+    fact_check, is_present_in_db = await fact_check_process(oai_client, text_data, mongo_client, "image")
+    if not is_present_in_db:
+        background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check

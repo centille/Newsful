@@ -2,9 +2,9 @@ import os
 from typing import Literal
 
 import openai
-from pymongo import AsyncMongoClient
 import requests
 import ujson
+from pymongo import AsyncMongoClient
 
 from core.db import fetch_from_db_if_exists  # type: ignore
 from core.postprocessors import archive_url, is_safe
@@ -97,9 +97,7 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
             function_call={"name": "provide_fact_check"},
         )
 
-        gpt_resp = GPTFactCheckModel.model_validate_json(final_response.choices[0].message.function_call.arguments)  # type: ignore
-        gpt_resp.sources = list(map(lambda x: x["link"], search_results["items"]))
-        return gpt_resp
+        return GPTFactCheckModel.model_validate_json(final_response.choices[0].message.function_call.arguments)  # type: ignore
     # If no function was called, parse the response directly
     return GPTFactCheckModel.model_validate_json(message.content or "")
 
@@ -109,7 +107,7 @@ async def fact_check_process(
     text_data: TextInputData,
     mongo_client: AsyncMongoClient,
     dtype: Literal["image", "text"],
-) -> FactCheckResponse:
+) -> tuple[FactCheckResponse, bool]:
     """
     fact_check_process checks the data against the OpenAI API.
 
@@ -129,7 +127,7 @@ async def fact_check_process(
     """
     fact_check_ = await fetch_from_db_if_exists(mongo_client, text_data)
     if fact_check_ is not None:
-        return fact_check_
+        return (fact_check_, True)
 
     fact_check_resp = await fact_check_with_gpt(client, text_data)
 
@@ -149,4 +147,4 @@ async def fact_check_process(
     if fact_check.label != FactCheckLabel.CORRECT and fact_check.url is not None:
         fact_check.archive = archive_url(fact_check.url)
 
-    return fact_check
+    return (fact_check, False)
