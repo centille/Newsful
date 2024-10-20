@@ -3,10 +3,15 @@
   "name": "Newsful",
   "description": "Newsful - Trusted and Useful",
   "version": "1.0.0",
-  "permissions": ["activeTab", "tabs", "contextMenus", "storage"],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "contextMenus",
+    "storage"
+  ],
   "action": {
     "default_title": "Newsful",
-    "default_popup": "./widget.html"
+    "default_popup": "./popup.html"
   },
   "background": {
     "service_worker": "./background.js"
@@ -18,14 +23,24 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*/*"],
-      "js": ["./widget.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "./content.js"
+      ]
     }
   ],
-  "web_accessible_resources": [{
-    "resources": ["popup.html"],
-    "matches": ["<all_urls>"]
-  }],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "popup.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }

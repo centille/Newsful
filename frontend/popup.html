@@ -1,115 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewsFul Fact Check</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Newsful</title>
+    <!-- <link rel="stylesheet" type="text/css" href="./popup.css"> -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="./popup.js"></script>
 </head>
-<body class="bg-gray-100">
-    <div id="loading" class="text-center p-4">Loading...</div>
-    <div id="result"></div>
 
-    <script>
-        const generateResultHTML = (data) => {
-            return `
-            <section class="min-h-screen bg-gray-100">
-                <div class="container mx-auto py-5 h-full">
-                    <div class="flex justify-center items-center h-full">
-                        <div class="w-full max-w-2xl">
-                            <div class="bg-white shadow-md rounded-lg overflow-hidden border-t-4 border-b-4 border-blue-400">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <div class="bg-blue-400 p-3">
-                                            <h3 class="text-white text-xl font-semibold">Fact Check Report</h3>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4">
-                                        <p class="text-blue-400 font-bold">URL</p>
-                                        <a href="${data.url}" class="text-blue-500 hover:underline">${data.url}</a>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-4 mt-4">
-                                        <div>
-                                            <p class="text-blue-400 font-bold">Data Type</p>
-                                            <p>${data.dataType}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-blue-400 font-bold">Label</p>
-                                            <p>${data.label}</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4">
-                                        <p class="text-blue-400 font-bold">Summary</p>
-                                        <p>${data.summary}</p>
-                                    </div>
-                                    <div class="bg-white -mx-5 px-5 py-4 mt-4">
-                                        <div>
-                                            <p class="text-blue-400 font-bold">Response</p>
-                                            <p>${data.response}</p>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-4 mt-4">
-                                            <div>
-                                                <p class="text-blue-400 font-bold">Website is Safe</p>
-                                                <p>${data.isSafe ? 'Yes' : 'No'}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-blue-400 font-bold">Government Related</p>
-                                                <p>${data.isGovernmentRelated ? 'Yes' : 'No'}</p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-4">
-                                            <p class="text-blue-400 font-bold">Archive</p>
-                                            <a href="${data.archive}" class="text-blue-500 hover:underline">${data.archive}</a>
-                                        </div>
-                                        <div class="mt-4">
-                                            <p class="text-blue-400 font-bold">References</p>
-                                            <ul class="list-disc list-inside">
-                                                ${data.references.map(ref => `<li><a href="${ref}" class="text-blue-500 hover:underline">${ref}</a></li>`).join('')}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            `;
-        };
 
-        const download = (jsonData) => {
-            const formattedString = `
-        URL: ${jsonData.url}
-        Label: ${jsonData.label}
-        Authenticity: ${jsonData.confidence}%
-        Archive: ${jsonData.archive}
-        Summary: ${jsonData.summary}
-        Response: ${jsonData.response}
-        Data Type: ${jsonData.dataType}
-        References:
-            ${jsonData.references.join("\n            ")}
-        Is Safe: ${jsonData.isSafe ? "YES" : "NO"}
-        Is Government Related: ${jsonData.isGovernmentRelated ? "YES" : "NO"}
-        Updated At: ${new Date(jsonData.updatedAt * 1000).toLocaleString()}
-            `;
-
-            const blob = new Blob([formattedString], { type: "text/plain" });
-            return URL.createObjectURL(blob);
-        };
-
-        chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-            const loading = document.getElementById("loading");
-            const result = document.getElementById("result");
-
-            if (message.action === "displayResponse") {
-                if (loading) loading.style.display = 'none';
-                if (result) result.innerHTML = generateResultHTML(message.data);
-                chrome.runtime.sendMessage({ action: "storeResponse", data: message.data });
-            } else if (message.action === "displayError") {
-                if (loading) loading.style.display = 'none';
-                if (result) result.innerHTML = `<p class="text-red-500">Error: ${message.error}</p>`;
-            }
-        });
-    </script>
+<body class="bg-gray-100 w-96">
+    <div id="popup-content">
+        <h1>Newsful</h1>
+        <div id="result">
+            Select text and use the context menu to verify.
+        </div>
+    </div>
 </body>
+
 </html>
