@@ -54,4 +54,4 @@ function handlePopupMessage(message, sender, sendResponse) {
         }
     }
 }
-chrome.runtime.onMessage.addListener(handlePopupMessage);
+browser.runtime.onMessage.addListener(handlePopupMessage);
