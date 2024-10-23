@@ -1,4 +1,3 @@
-
 function handlePopupMessage(message, sender, sendResponse) {
     const resultDiv = document.getElementById('result');
     if (message.action === "showPopup") {
@@ -54,4 +53,4 @@ function handlePopupMessage(message, sender, sendResponse) {
         }
     }
 }
-browser.runtime.onMessage.addListener(handlePopupMessage);
+chrome.runtime.onMessage.addListener(handlePopupMessage);

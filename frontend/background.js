@@ -3,24 +3,22 @@ const BASE_URL = 'http://127.0.0.1:8000';
 /**
  * Create a context menu item for the user to click on to verify the selected
  * text with Newsful.
- * @listens browser.runtime.onInstalled
+ * @listens chrome.runtime.onInstalled
  */
 function createContextMenu() {
-    browser.contextMenus.create({
+    chrome.contextMenus.create({
         id: "verifyWithNewsful",
         title: "Verify with Newsful",
         contexts: ["selection"]
     });
 }
-browser.runtime.onInstalled.addListener(createContextMenu);
-
 
 /**
  * Handles the context menu item click event. If the clicked item is "verifyWithNewsful",
  * calls the verifyText function with the selected text and the URL of the page.
  * @param {Object} info - The context menu item click event info
  * @param {Object} tab - The tab where the context menu item was clicked
- * @listens browser.contextMenus.onClicked
+ * @listens chrome.contextMenus.onClicked
  */
 async function onContextClick(info, tab) {
     if (info.menuItemId === "verifyWithNewsful") {
@@ -29,7 +27,7 @@ async function onContextClick(info, tab) {
         await verifyText(pageUrl, selectedText);
     }
 }
-browser.contextMenus.onClicked.addListener(onContextClick);
+chrome.contextMenus.onClicked.addListener(onContextClick);
 
 /**
  * Send a POST request to Newsful backend to verify the given text.
@@ -53,10 +51,10 @@ async function verifyText(url, content) {
 
         const result = await response.json();
         console.log(result);
-        browser.runtime.sendMessage({ action: "showPopup", result: result });
+        chrome.runtime.sendMessage({ action: "showPopup", result: result });
     } catch (error) {
         console.log('Error:', error);
-        browser.runtime.sendMessage({ action: "showPopup", error: error.message });
+        chrome.runtime.sendMessage({ action: "showPopup", error: error.message });
     }
 }
 
@@ -65,13 +63,13 @@ async function verifyText(url, content) {
  * @param {Object} message - The message sent from the popup.
  * @param {Object} sender - The sender of the message.
  * @param {function} sendResponse - The function to send the response back to the popup.
- * @listens browser.runtime.onMessage
+ * @listens chrome.runtime.onMessage
  */
 function onSelectNewsfulFromContextMenu(message, sender, sendResponse) {
     if (message.action === "verifyText") {
-        browser.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             verifyText(tabs[0].url, message.text);
         });
     }
 }
-browser.runtime.onMessage.addListener(onSelectNewsfulFromContextMenu);
+chrome.runtime.onMessage.addListener(onSelectNewsfulFromContextMenu);
