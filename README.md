@@ -2,6 +2,12 @@
 
 An Advanced Fake News Detection system packaged as a browser extension.
 
+## Setup and Execution
+
+1. clone the repo
+2. Follow [these instructions](./backend/README.ms) to run backend
+3. Goto browser extensions page, enable developer mode and load the frontend folder via the "load unpacked" option.
+
 ## Tech Stack
 
 ### Frontend
