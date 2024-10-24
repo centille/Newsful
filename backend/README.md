@@ -16,34 +16,24 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
 ## Installation
 
 1. Clone the repository
-2. Create a virtual environment with
+
+   ```
+    git clone https://github.com/centille/Newsful/
+    ```
+   
+2. Navigate to the backend
 
     ```sh
-    python -m venv env
+    cd ./backend
     ```
 
-3. Activate the virtual environment with
-
-    - for Linux:
-
-        ```sh
-        source env/bin/activate
-        ```
-
-    - for Windows:
-
-        ```sh
-        ./env/Scripts/activate.bat
-        ```
-
-4. Install dependencies
+3. Install dependencies
 
     ```sh
-    pip install poetry # via pip
-    poetry install     # via poetry
+    pip install poetry && poetry install
     ```
 
-5. Set environment variables
+4. Set environment variables
 
     ```env
     OPENAI_API_KEY="" # https://platform.openai.com/account/api-keys
@@ -54,7 +44,7 @@ This is the backend API for the Newsful Browser Plugin. It is a Python-FastAPI a
     ENV="dev"         # dev or prod
     ```
 
-6. Run the API
+5. Run the API
 
     ```sh
     fastapi dev ./main.py # dev
