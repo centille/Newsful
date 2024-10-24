@@ -1,6 +1,6 @@
-# Newsful - Trusted and Useful
+# Newsful
 
-___
+An Advanced Fake News Detection system packaged as a browser extension.
 
 ## Tech Stack
 
@@ -18,3 +18,7 @@ ___
 - [Google CSE](https://programmablesearchengine.google.com/about/)
 - [pytesseract](https://pypi.org/project/pytesseract/)
 - [Logfire](https://logfire.pydantic.dev/)
+
+## Awards
+
+1. Won the [Kavach 2023 Cybersecurity Hackathon](https://kavach.mic.gov.in/) conducted by Ministry of Home Affairs, AICTE and I4C
