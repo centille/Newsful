@@ -15,7 +15,7 @@ fastapi = {extras = ["standard"], version = "^0.115.0"}
 pandas = "^2.0.3"
 pymongo = {extras = ["srv"], version = "^4.10.1"}
 python-dotenv = "^1.0.0"
-uvicorn = "^0.23.1"
+uvicorn = "^0.32.0"
 openai = "^1.51.0"
 deep-translator = "^1.11.4"
 pytesseract = "^0.3.10"
