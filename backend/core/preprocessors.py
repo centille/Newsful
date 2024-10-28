@@ -4,7 +4,7 @@ import instructor
 import requests
 import tiktoken
 from deep_translator.google import GoogleTranslator  # type: ignore
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 from PIL import Image
 from PIL.ImageFile import ImageFile
 
@@ -25,15 +25,15 @@ def num_of_tokens(text: str) -> int:
     return len(tiktokens.encode(text))
 
 
-async def summarize(client: AsyncOpenAI, text: str) -> str:
-    """summarizes the text via OpenAI."""
+async def summarize(client: AsyncGroq, text: str) -> str:
+    """summarizes the text via Groq."""
     if num_of_tokens(text) <= 200:
         return text
     try:
         # client_ = instructor.from_openai(client)
-        client_ = instructor.from_openai(client)
+        client_ = instructor.from_groq(client)
         response = await client_.chat.completions.create(
-            model="gpt-4o-mini",
+            model="llama-3.1-8b-instant",
             response_model=GPTGeneratedSummary,
             messages=[
                 {
@@ -45,7 +45,7 @@ async def summarize(client: AsyncOpenAI, text: str) -> str:
                     "content": f"Summarize the following text in a concise way:\n{text}",
                 },
             ],
-        )  # type: ignore
+        )
         assert isinstance(response, GPTGeneratedSummary)
         return response.summary
     except AssertionError:

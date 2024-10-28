@@ -2,6 +2,7 @@
 import os
 from contextlib import asynccontextmanager
 
+from groq import AsyncGroq
 import logfire
 import pytesseract  # type: ignore
 import requests
@@ -25,6 +26,7 @@ URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 
 
 oai_client = AsyncOpenAI()
+groq_client = AsyncGroq()
 mongo_client = AsyncMongoClient(URI)  # type: ignore
 
 
@@ -74,7 +76,7 @@ async def health() -> HealthResponse:
 async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) -> FactCheckResponse:
     """Endpoint to verify a news article."""
 
-    data.content = await summarize(oai_client, to_english(data.content))
+    data.content = await summarize(groq_client, to_english(data.content))
     fact_check, is_present_in_db = await fact_check_process(oai_client, data, mongo_client, "text")
     if not is_present_in_db:
         background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
