@@ -77,7 +77,7 @@ async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) ->
     """Endpoint to verify a news article."""
 
     data.content = await summarize(groq_client, to_english(data.content))
-    fact_check, is_present_in_db = await fact_check_process(oai_client, data, mongo_client, "text")  # type: ignore
+    fact_check, is_present_in_db = await fact_check_process(oai_client, groq_client, data, mongo_client, "text")  # type: ignore
     if not is_present_in_db:
         background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check
@@ -101,7 +101,7 @@ async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -
         content=text,
     )
 
-    fact_check, is_present_in_db = await fact_check_process(oai_client, text_data, mongo_client, "image")  # type: ignore
+    fact_check, is_present_in_db = await fact_check_process(oai_client, groq_client, text_data, mongo_client, "image")  # type: ignore
     if not is_present_in_db:
         background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check
