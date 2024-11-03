@@ -4,23 +4,28 @@ from pydantic import AnyHttpUrl
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
 
-from core.utils import get_domain
-
 
 def is_safe(url: AnyHttpUrl) -> bool:
     """checks if the url is a phishing url."""
 
-    domain = get_domain(url)
-
-    websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
-    if domain in websites:
-        return True
-
-    if not str(url).startswith("https://"):
+    # check is the url is a homographic url
+    host = url.host
+    unicode_host = url.unicode_host()
+    if host != unicode_host or host is None:
         return False
 
+    # check if the url is a https url
+    if url.scheme != "https":
+        return False
+
+    # check if the url is a very popular website
+    websites = pd.read_csv("./assets/websites.csv")["hostname"]  # type: ignore
+    if host in websites:
+        return True
+
+    # check if the url is a safe tld
     safe_tlds = (".gov", ".org", ".edu", ".gov.in")
-    return domain.endswith(safe_tlds)
+    return host.endswith(safe_tlds)
 
 
 def archive_url(url: AnyHttpUrl) -> str | None:

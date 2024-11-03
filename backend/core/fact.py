@@ -5,6 +5,7 @@ import openai
 import requests
 import ujson
 from pymongo import AsyncMongoClient
+from pymongo.typings import _DocumentType
 
 from core.db import fetch_from_db_if_exists  # type: ignore
 from core.postprocessors import archive_url, is_safe
@@ -105,7 +106,7 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
 async def fact_check_process(
     client: openai.AsyncOpenAI,
     text_data: TextInputData,
-    mongo_client: AsyncMongoClient,
+    mongo_client: AsyncMongoClient[_DocumentType],
     dtype: Literal["image", "text"],
 ) -> tuple[FactCheckResponse, bool]:
     """

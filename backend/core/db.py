@@ -3,11 +3,12 @@ from typing import Union
 import ujson
 from pymongo import AsyncMongoClient
 from pymongo.errors import PyMongoError
+from pymongo.typings import _DocumentType
 
 from schemas import FactCheckResponse, TextInputData
 
 
-async def db_is_working(client: AsyncMongoClient):
+async def db_is_working(client: AsyncMongoClient[_DocumentType]):
     """Checks if the database is working."""
 
     try:
@@ -16,7 +17,7 @@ async def db_is_working(client: AsyncMongoClient):
         return False
 
 
-async def add_to_db(client: AsyncMongoClient, data: FactCheckResponse):
+async def add_to_db(client: AsyncMongoClient[_DocumentType], data: FactCheckResponse):
     """adds the Pydantic object to the mongo database"""
 
     try:
@@ -28,7 +29,7 @@ async def add_to_db(client: AsyncMongoClient, data: FactCheckResponse):
 
 
 async def fetch_from_db_if_exists(
-    client: AsyncMongoClient,
+    client: AsyncMongoClient[_DocumentType],
     data: TextInputData,
 ) -> Union[FactCheckResponse, None]:
     """

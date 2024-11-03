@@ -8,15 +8,15 @@ from groq import AsyncGroq
 from PIL import Image
 from PIL.ImageFile import ImageFile
 
-from core.utils import clean_text
 from schemas import GPTGeneratedSummary
 
 
 def to_english(text: str) -> str:  # type: ignore
     """translates text to english if it is not already in english."""
+    text = " ".join(text.split()).rstrip(".")
     translator = GoogleTranslator(source="auto", target="en")  # type: ignore
     text = translator.translate(text)  # type: ignore
-    return clean_text(text)
+    return text
 
 
 def num_of_tokens(text: str) -> int:
