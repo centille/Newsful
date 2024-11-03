@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Literal, Optional
 
-from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field
+from pydantic import AnyHttpUrl, BaseModel, Field
 
 
 class TextInputData(BaseModel):
@@ -52,11 +52,3 @@ class FactCheckResponse(BaseModel):
     archive: str | None = Field(None, description="The archive url of the site")
     references: list[AnyHttpUrl] = Field([], description="The references of the fact check")
     updatedAt: datetime = Field(default_factory=datetime.now, description="The time of the last update")
-
-
-class User(BaseModel):
-    """The user model for fastapi security"""
-
-    email: EmailStr
-    first_name: str
-    last_name: str
