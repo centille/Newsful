@@ -2,7 +2,6 @@ from io import BytesIO
 
 import instructor
 import requests
-import tiktoken
 from deep_translator.google import GoogleTranslator  # type: ignore
 from groq import AsyncGroq
 from PIL import Image
@@ -19,15 +18,9 @@ def to_english(text: str) -> str:  # type: ignore
     return text
 
 
-def num_of_tokens(text: str) -> int:
-    """calculates the number of tokens in a text."""
-    tiktokens = tiktoken.encoding_for_model("gpt-4o-mini")
-    return len(tiktokens.encode(text))
-
-
 async def summarize(client: AsyncGroq, text: str) -> str:
     """summarizes the text via Groq."""
-    if num_of_tokens(text) <= 200:
+    if len(text) <= 200:
         return text
     try:
         # client_ = instructor.from_openai(client)
