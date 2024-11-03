@@ -1,9 +1,11 @@
 import os
 from typing import Literal
 
+import instructor
 import openai
 import requests
 import ujson
+from pydantic import BaseModel
 from pymongo import AsyncMongoClient
 from pymongo.typings import _DocumentType
 
@@ -12,7 +14,7 @@ from core.postprocessors import archive_url, is_safe
 from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 
 
-def search_tool(query: str, num_results: int = 3):
+def search_tool(query: str, num_results: int = 5):
     """Tool to search via Google CSE"""
     api_key = os.getenv("GOOGLE_API_KEY", "")
     cx = os.getenv("GOOGLE_CSE_ID", "")
@@ -23,7 +25,11 @@ def search_tool(query: str, num_results: int = 3):
     return resp.json()
 
 
-async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -> GPTFactCheckModel:
+class SearchQuery(BaseModel):
+    query: str
+
+
+async def fact_check_with_gpt(oai_client: openai.AsyncOpenAI, data: TextInputData) -> GPTFactCheckModel:
     """
     fact_check_with_gpt checks the data against the OpenAI API.
 
@@ -40,67 +46,43 @@ async def fact_check_with_gpt(client: openai.AsyncOpenAI, data: TextInputData) -
 
     claim = data.content
 
+    client = instructor.from_openai(oai_client)
+
     response = await client.chat.completions.create(
         model="gpt-4o-mini",
+        response_model=SearchQuery,
         messages=[
             {
                 "role": "system",
-                "content": "I want you to act as a fact-check researcher. You will be given a claim and you have should search the information on Google to help in the fact checking.",
+                "content": "I want you to act as a fact-check researcher. You will be given a claim and you have should search the information on a custom search engine to help in the fact checking. Frame a query using the least words possible and return only the query.",
             },
             {
                 "role": "user",
                 "content": claim,
             },
         ],
-        functions=[
-            {
-                "name": "google_search",
-                "description": "Search Google for fact-checking information",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string"},
-                        "num_results": {"type": "integer", "default": 3},
-                    },
-                    "required": ["query"],
-                },
-            }
-        ],
-        function_call="auto",
     )
+    assert isinstance(response, SearchQuery)
 
-    # Process the response and perform the Google search if requested
-    message = response.choices[0].message
-    if message.function_call and message.function_call.name == "google_search":
-        function_args = ujson.loads(message.function_call.arguments)
-        search_results = search_tool(function_args["query"], function_args.get("num_results", 3))
+    search_results = search_tool(response.query)
 
-        # Send the search results back to GPT for analysis
-        final_response = await client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "I want you to act as a fact checker. You will be given a statement along with relevant search results and you are supposed to provide a fact check based on them. You need to classify the claim as correct, incorrect, or misleading and provide the logical explanation along with the sources you used.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Original statement: {claim}\n\nSearch results: {ujson.dumps(search_results, escape_forward_slashes=False)}",
-                },
-            ],
-            functions=[
-                {
-                    "name": "provide_fact_check",
-                    "description": "Provide the fact check result",
-                    "parameters": GPTFactCheckModel.model_json_schema(),
-                }
-            ],
-            function_call={"name": "provide_fact_check"},
-        )
-
-        return GPTFactCheckModel.model_validate_json(final_response.choices[0].message.function_call.arguments)  # type: ignore
-    # If no function was called, parse the response directly
-    return GPTFactCheckModel.model_validate_json(message.content or "")
+    # Send the search results back to GPT for analysis
+    final_response = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "system",
+                "content": "I want you to act as a fact checker. You will be given a statement along with relevant search results and you are supposed to provide a fact check based on them. You need to classify the claim as correct, incorrect, or misleading and provide the logical explanation along with the sources you used.",
+            },
+            {
+                "role": "user",
+                "content": f"Original statement: {claim}\n\nSearch results: {ujson.dumps(search_results, escape_forward_slashes=False)}",
+            },
+        ],
+        response_model=GPTFactCheckModel,
+    )
+    assert isinstance(final_response, GPTFactCheckModel)
+    return final_response
 
 
 async def fact_check_process(

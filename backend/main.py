@@ -2,17 +2,17 @@
 import os
 from contextlib import asynccontextmanager
 
-from groq import AsyncGroq
 import logfire
 import pytesseract  # type: ignore
 import requests
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from groq import AsyncGroq
 from openai import AsyncOpenAI
 from pymongo import AsyncMongoClient
 
-from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english  # type: ignore
+from core import add_to_db, db_is_working, fact_check_process, get_image, summarize, to_english
 from schemas import FactCheckResponse, HealthResponse, ImageInputData, TextInputData
 
 # Load environment variables
@@ -69,7 +69,7 @@ logfire.instrument_fastapi(app, capture_headers=True, record_send_receive=True)
 async def health() -> HealthResponse:
     """Health check endpoint."""
 
-    return HealthResponse(database_is_working=await db_is_working(mongo_client))
+    return HealthResponse(database_is_working=await db_is_working(mongo_client))  # type: ignore
 
 
 @app.post("/verify/text/")
@@ -77,7 +77,7 @@ async def verify_news(data: TextInputData, background_tasks: BackgroundTasks) ->
     """Endpoint to verify a news article."""
 
     data.content = await summarize(groq_client, to_english(data.content))
-    fact_check, is_present_in_db = await fact_check_process(oai_client, data, mongo_client, "text")
+    fact_check, is_present_in_db = await fact_check_process(oai_client, data, mongo_client, "text")  # type: ignore
     if not is_present_in_db:
         background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check
@@ -101,7 +101,7 @@ async def image_check(data: ImageInputData, background_tasks: BackgroundTasks) -
         content=text,
     )
 
-    fact_check, is_present_in_db = await fact_check_process(oai_client, text_data, mongo_client, "image")
+    fact_check, is_present_in_db = await fact_check_process(oai_client, text_data, mongo_client, "image")  # type: ignore
     if not is_present_in_db:
         background_tasks.add_task(add_to_db, mongo_client, fact_check)  # type: ignore
     return fact_check

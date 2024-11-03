@@ -6,8 +6,13 @@ from deep_translator.google import GoogleTranslator  # type: ignore
 from groq import AsyncGroq
 from PIL import Image
 from PIL.ImageFile import ImageFile
+from pydantic import BaseModel, Field
 
-from schemas import GPTGeneratedSummary
+
+class GPTGeneratedSummary(BaseModel):
+    """The model for summarization"""
+
+    summary: str = Field(None, description="The summary of the article")
 
 
 def to_english(text: str) -> str:  # type: ignore

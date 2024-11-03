@@ -34,12 +34,6 @@ class GPTFactCheckModel(BaseModel):
     sources: list[AnyHttpUrl] = Field([], description="The sources of the fact check")
 
 
-class GPTGeneratedSummary(BaseModel):
-    """The model for summarization"""
-
-    summary: str = Field(None, description="The summary of the article")
-
-
 class HealthResponse(BaseModel):
     """The response model for the health check endpoint"""
 
