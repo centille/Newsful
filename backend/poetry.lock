@@ -960,13 +960,13 @@ files = [
 
 [[package]]
 name = "logfire"
-version = "1.3.1"
+version = "2.4.1"
 description = "The best Python observability tool! 🪵🔥"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "logfire-1.3.1-py3-none-any.whl", hash = "sha256:974657b9d775a65b5c526550baa95c121257a907ab5d9e8c99cbb715562c2673"},
-    {file = "logfire-1.3.1.tar.gz", hash = "sha256:73f9ff2691c927fc3ad28da5308ffd43af30d9bb8efedef52266a797da878381"},
+    {file = "logfire-2.4.1-py3-none-any.whl", hash = "sha256:54c7d2c3d1169850a3fe492186337d50f47e3a5d83cc021d37c58bea1adfff41"},
+    {file = "logfire-2.4.1.tar.gz", hash = "sha256:df8a3ba01e358170c189543e98d3244267a72b771ee338daccc657c3c56daf1f"},
 ]
 
 [package.dependencies]
@@ -982,6 +982,7 @@ typing-extensions = ">=4.1.0"
 
 [package.extras]
 aiohttp = ["opentelemetry-instrumentation-aiohttp-client (>=0.42b0)"]
+asgi = ["opentelemetry-instrumentation-asgi (>=0.42b0)"]
 asyncpg = ["opentelemetry-instrumentation-asyncpg (>=0.42b0)"]
 celery = ["opentelemetry-instrumentation-celery (>=0.42b0)"]
 django = ["opentelemetry-instrumentation-django (>=0.42b0)"]
@@ -997,6 +998,7 @@ requests = ["opentelemetry-instrumentation-requests (>=0.42b0)"]
 sqlalchemy = ["opentelemetry-instrumentation-sqlalchemy (>=0.42b0)"]
 starlette = ["opentelemetry-instrumentation-starlette (>=0.42b0)"]
 system-metrics = ["opentelemetry-instrumentation-system-metrics (>=0.42b0)"]
+wsgi = ["opentelemetry-instrumentation-wsgi (>=0.42b0)"]
 
 [[package]]
 name = "markdown-it-py"
@@ -3057,4 +3059,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "4b77edd4ee6dcbf7717fd30b269924d00d461e9812e82aa3c6878dd62509f1e9"
+content-hash = "b82c6f827fa06bb5b986756d3096f6e2b38ad4d00fc41c8901e8cdc987062963"
