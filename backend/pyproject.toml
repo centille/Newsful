@@ -22,7 +22,7 @@ pytesseract = "^0.3.10"
 ujson = "^5.10.0"
 pydantic = "^2.9.2"
 logfire = {extras = ["fastapi"], version = "^1.0.1"}
-instructor = "^1.5.2"
+instructor = "^1.7.0"
 tiktoken = "^0.8.0"
 groq = "^0.11.0"
 
