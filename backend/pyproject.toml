@@ -11,7 +11,7 @@ build = "poetry.core.masonry.api.build"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 waybackpy = "^3.0.6"
-fastapi = {extras = ["standard"], version = "^0.115.0"}
+fastapi = {extras = ["standard"], version = "^0.115.6"}
 pandas = "^2.0.3"
 pymongo = {extras = ["srv"], version = "^4.10.1"}
 python-dotenv = "^1.0.0"
