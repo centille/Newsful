@@ -9,13 +9,8 @@ class TextInputData(BaseModel):
     """input format for text fact checking endpoint"""
 
     url: Optional[AnyHttpUrl] = Field(None, description="The url of the article")
-    content: str = Field(None, description="The content of the article")
+    content: str = Field("", description="The content of the article")
 
-
-class ImageInputData(BaseModel):
-    """input format for image fact checking endpoint"""
-
-    url: AnyHttpUrl = Field(None, description="The url of the image")
 
 
 class FactCheckLabel(str, Enum):
@@ -29,9 +24,9 @@ class FactCheckLabel(str, Enum):
 class GPTFactCheckModel(BaseModel):
     """expected result format from OpenAI for fact checking"""
 
-    label: FactCheckLabel = Field(None, description="The label of the fact check")
-    explanation: str = Field(None, description="The explanation of the fact check")
-    sources: list[AnyHttpUrl] = Field([], description="The sources of the fact check")
+    label: FactCheckLabel = Field(None, description="The result of the fact check")
+    explanation: str = Field("", description="The explanation of the fact check")
+    sources: list[AnyHttpUrl] = Field(list(), description="The sources of the fact check")
 
 
 class HealthResponse(BaseModel):
@@ -44,7 +39,6 @@ class FactCheckResponse(BaseModel):
     """The response model for the fact check endpoint"""
 
     url: AnyHttpUrl | None = Field(None, description="The url of the article")
-    dataType: Literal["text", "image"] = Field(description="The type of data")
     label: FactCheckLabel = Field(description="The label of the fact check")
     summary: str = Field(description="The summary of the claim")
     response: str = Field(description="The logical explanation of the fact check")

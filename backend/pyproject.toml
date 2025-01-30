@@ -1,30 +1,25 @@
-[tool.poetry]
-name = "newsful"
+[project]
+name = "newsful-backend"
 version = "0.1.0"
 description = "The Backend API for Newsful Browser Plugin"
-authors = ["Siddhesh Agarwal <siddhesh.agarwal@gmail.com>"]
+authors = [{ name = "Siddhesh Agarwal", email = "siddhesh.agarwal@gmail.com"}]
 readme = "README.md"
-repository = "https://github.com/centille/Newsful/"
-license = "GPL-3.0-only"
-build = "poetry.core.masonry.api.build"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-waybackpy = "^3.0.6"
-fastapi = {extras = ["standard"], version = "^0.115.0"}
-pandas = "^2.0.3"
-pymongo = {extras = ["srv"], version = "^4.10.1"}
-python-dotenv = "^1.0.0"
-uvicorn = "^0.32.0"
-openai = "^1.51.0"
-deep-translator = "^1.11.4"
-pytesseract = "^0.3.10"
-ujson = "^5.10.0"
-pydantic = "^2.9.2"
-logfire = {extras = ["fastapi"], version = "^2.11.1"}
-instructor = "^1.5.2"
-tiktoken = "^0.8.0"
-groq = "^0.11.0"
+requires-python = ">=3.10"
+dependencies = [
+    "bs4>=0.0.2",
+    "deep-translator>=1.11.4",
+    "fastapi[standard]>=0.115.7",
+    "groq>=0.15.0",
+    "instructor>=1.7.2",
+    "logfire[fastapi]>=3.4.0",
+    "openai>=1.60.2",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.6",
+    "pymongo>=4.10.1",
+    "python-dotenv>=1.0.1",
+    "ujson>=5.10.0",
+    "waybackpy>=3.0.6",
+]
 
 [tool.black]
 line-length = 120
@@ -37,7 +32,3 @@ skip_glob = ["./assets/*"]
 
 [tool.logfire]
 pydantic_plugin_record = "failure"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

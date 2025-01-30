@@ -1,19 +1,20 @@
 import os
 from typing import Literal, TypedDict
+import asyncio
 
+from bs4 import BeautifulSoup
 from groq import AsyncGroq
-import instructor
-import openai
 import requests
 import ujson
+import instructor
 from pydantic import BaseModel
 from pymongo import AsyncMongoClient
 from pymongo.typings import _DocumentType
 
+from core.db import fetch_from_db_if_exists
 from core.preprocessors import summarize
-from core.db import fetch_from_db_if_exists  # type: ignore
 from core.postprocessors import archive_url, is_safe
-from schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
+from schemas.schemas import FactCheckLabel, FactCheckResponse, GPTFactCheckModel, TextInputData
 
 
 class SearchResult(TypedDict):
@@ -25,11 +26,21 @@ class SearchResult(TypedDict):
 async def get_content(groq_client: AsyncGroq, url: str) -> str | None:
     """returns the content of given url"""
     try:
-        res = requests.get(url, timeout=15)
-        res.raise_for_status()
-        return await summarize(groq_client, res.text)
-    except Exception:
+        with requests.get(url, timeout=15) as res:
+            res.raise_for_status()
+            soup = BeautifulSoup(res.text, "html.parser")
+            return await summarize(groq_client, soup.get_text())
+    except requests.exceptions.RequestException:
         return None
+
+
+async def get_url_content(groq_client: AsyncGroq, item: dict) -> SearchResult:
+    content = await get_content(groq_client, str(item.get("link", "")))
+    return {
+        "title": item["title"],
+        "link": item["link"],
+        "content": content or item["snippet"],
+    }
 
 
 async def search_tool(groq_client: AsyncGroq, query: str, num_results: int = 3):
@@ -43,15 +54,8 @@ async def search_tool(groq_client: AsyncGroq, query: str, num_results: int = 3):
     json = ujson.loads(resp.text)
     assert hasattr(resp, "items")
     res: list[SearchResult] = []
-    for item in json["items"]:
-        content = await get_content(groq_client, item["link"])
-        res.append(
-            {
-                "title": item["title"],
-                "link": item["link"],
-                "content": content or item["snippet"],
-            }
-        )
+    tasks = [get_url_content(groq_client, item) for item in json["items"]]
+    res.extend(await asyncio.gather(*tasks))
     return res
 
 
@@ -59,7 +63,7 @@ class SearchQuery(BaseModel):
     query: str
 
 
-async def fact_check(oai_client: openai.AsyncOpenAI, groq_client: AsyncGroq, data: TextInputData) -> GPTFactCheckModel:
+async def fact_check(groq_client: AsyncGroq, data: TextInputData) -> GPTFactCheckModel:
     """
     fact_check checks the data against the OpenAI API.
 
@@ -76,15 +80,15 @@ async def fact_check(oai_client: openai.AsyncOpenAI, groq_client: AsyncGroq, dat
 
     claim = data.content
 
-    client = instructor.from_openai(oai_client)
+    client = instructor.from_groq(groq_client)
 
     response = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="llama-3.2-3b-preview",
         response_model=SearchQuery,
         messages=[
             {
                 "role": "system",
-                "content": "I want you to act as a fact-check researcher. You will be given a claim and you have should search the information on a custom search engine to help in the fact checking. Frame a query using the least words possible and return only the query.",
+                "content": "You are a fact-check researcher whose task is to search information to help in the fact checking. Frame an appropriate query to get the most appropriate results that will aid in the fact check",
             },
             {
                 "role": "user",
@@ -98,11 +102,11 @@ async def fact_check(oai_client: openai.AsyncOpenAI, groq_client: AsyncGroq, dat
 
     # Send the search results back to GPT for analysis
     final_response = await client.chat.completions.create(
-        model="gpt-4o",
+        model="deepseek-r1-distill-llama-70b",
         messages=[
             {
                 "role": "system",
-                "content": "I want you to act as a fact checker. You will be given a statement along with relevant search results and you are supposed to provide a fact check based on them. You need to classify the claim as correct, incorrect, or misleading and provide the logical explanation along with the sources you used.",
+                "content": "I want you to act as a fact checker. You will be given a statement along with relevant search results and you are supposed to provide a fact check based on the search results. You need to classify the claim as 'correct', 'incorrect', or 'misleading' and provide the logical explanation along with the sources you used.",
             },
             {
                 "role": "user",
@@ -116,7 +120,6 @@ async def fact_check(oai_client: openai.AsyncOpenAI, groq_client: AsyncGroq, dat
 
 
 async def fact_check_process(
-    oai_client: openai.AsyncOpenAI,
     groq_client: AsyncGroq,
     text_data: TextInputData,
     mongo_client: AsyncMongoClient[_DocumentType],
@@ -143,12 +146,11 @@ async def fact_check_process(
     if fact_check_ is not None:
         return (fact_check_, True)
 
-    fact_check_resp = await fact_check(oai_client, groq_client, text_data)
+    fact_check_resp = await fact_check(groq_client, text_data)
 
     # assign to right variable
     fact_check_obj = FactCheckResponse(
         url=text_data.url,
-        dataType=dtype,
         label=fact_check_resp.label,
         response=fact_check_resp.explanation,
         summary=text_data.content,

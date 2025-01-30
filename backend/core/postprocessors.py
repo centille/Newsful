@@ -1,6 +1,8 @@
 import pandas as pd
-import requests
+
 from pydantic import AnyHttpUrl
+
+import requests
 from waybackpy import WaybackMachineSaveAPI
 from waybackpy.exceptions import MaximumSaveRetriesExceeded
 
@@ -31,13 +33,13 @@ def is_safe(url: AnyHttpUrl) -> bool:
 def archive_url(url: AnyHttpUrl) -> str | None:
     """returns the archive url of given url"""
 
-    user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
-    save_api = WaybackMachineSaveAPI(
-        url=str(url),
-        user_agent=user_agent,
-        max_tries=3,
-    )
     try:
+        user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
+        save_api = WaybackMachineSaveAPI(
+            url=str(url),
+            user_agent=user_agent,
+            max_tries=3,
+        )
         return save_api.save()
     except (MaximumSaveRetriesExceeded, requests.exceptions.RetryError):
-        return None
+        return str(url)

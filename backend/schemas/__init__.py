@@ -4,9 +4,7 @@ from schemas.schemas import (
     FactCheckResponse,
     GPTFactCheckModel,
     HealthResponse,
-    ImageInputData,
     TextInputData,
-    User,
 )
 
 __all__ = [
@@ -14,7 +12,5 @@ __all__ = [
     "FactCheckResponse",
     "GPTFactCheckModel",
     "HealthResponse",
-    "ImageInputData",
     "TextInputData",
-    "User",
 ]

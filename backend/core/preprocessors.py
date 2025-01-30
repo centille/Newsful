@@ -1,11 +1,6 @@
-from io import BytesIO
-
 import instructor
-import requests
 from deep_translator.google import GoogleTranslator  # type: ignore
 from groq import AsyncGroq
-from PIL import Image
-from PIL.ImageFile import ImageFile
 from pydantic import BaseModel, Field
 
 
@@ -48,10 +43,3 @@ async def summarize(client: AsyncGroq, text: str) -> str:
         return response.summary
     except AssertionError:
         return text
-
-
-def get_image(image_url: str) -> ImageFile:
-    """fetches an image from a url and returns a PIL ImageFile."""
-    response = requests.get(image_url, allow_redirects=True, timeout=15)
-    response.raise_for_status()
-    return Image.open(BytesIO(response.content))
