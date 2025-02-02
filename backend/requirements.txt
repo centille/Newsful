@@ -700,9 +700,9 @@ numpy==2.1.2 ; python_version >= "3.10" and python_version <= "3.11" \
     --hash=sha256:f751ed0a2f250541e19dfca9f1eafa31a392c71c832b6bb9e113b10d050cb0f1 \
     --hash=sha256:faa88bc527d0f097abdc2c663cddf37c05a1c2f113716601555249805cf573f1 \
     --hash=sha256:fc44e3c68ff00fd991b59092a54350e6e4911152682b4782f68070985aa9e648
-openai==1.52.1 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:383b96c7e937cbec23cad5bf5718085381e4313ca33c5c5896b54f8e1b19d144 \
-    --hash=sha256:f23e83df5ba04ee0e82c8562571e8cb596cd88f9a84ab783e6c6259e5ffbfb4a
+openai==1.60.2 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:993bd11b96900b9098179c728026f016b4982ded7ee30dfcf4555eab1171fff9 \
+    --hash=sha256:a8f843e10f2855713007f491d96afb2694b11b5e02cb97c7d01a0be60bc5bb51
 opentelemetry-api==1.27.0 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:953d5871815e7c30c81b56d910c707588000fff7a3ca1c73e6531911d53065e7 \
     --hash=sha256:ed673583eaa5f81b5ce5e86ef7cdaf622f88ef65f0b9aab40b843dcae5bef342
