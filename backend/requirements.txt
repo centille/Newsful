@@ -414,9 +414,9 @@ idna==3.10 ; python_version >= "3.10" and python_version < "3.12" \
 importlib-metadata==8.4.0 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:66f342cc6ac9818fc6ff340576acd24d65ba0b3efabb2b4ac08b598965a4a2f1 \
     --hash=sha256:9a547d3bc3608b025f93d403fdd1aae741c24fbb8314df4b155675742ce303c5
-instructor==1.6.3 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:399cd90e30b5bc7cbd47acd7399c9c4e84926a96c20c8b5d00c5a04b41ed41ab \
-    --hash=sha256:a8f973fea621c0188009b65a3429a526c24aeb249fc24100b605ea496e92d622
+instructor==1.7.8 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:31468b3a67db96c3e2d5e26981f9317ca0cdfa155a4b5d555bd70a15f1e15003 \
+    --hash=sha256:b20c27974d2dd52d01b60a6a3604db37608f8b077fb36d68833efbcd75355fd1
 jinja2==3.1.5 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb \
     --hash=sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb
