@@ -710,9 +710,9 @@ opentelemetry-semantic-conventions==0.48b0 ; python_version >= "3.10" and python
 opentelemetry-util-http==0.48b0 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:60312015153580cc20f322e5cdc3d3ecad80a71743235bdb77716e742814623c \
     --hash=sha256:76f598af93aab50328d2a69c786beaedc8b6a7770f7a818cc307eb353debfffb
-packaging==24.1 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002 \
-    --hash=sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124
+packaging==25.0 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484 \
+    --hash=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f
 pandas==2.2.3 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:062309c1b9ea12a50e8ce661145c6aab431b1e99530d3cd60640e255778bd43a \
     --hash=sha256:15c0e1e02e93116177d29ff83e8b1619c93ddc9c49083f237d4312337a61165d \
