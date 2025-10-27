@@ -394,9 +394,9 @@ importlib-metadata==8.4.0 ; python_version >= "3.10" and python_version < "3.12"
 instructor==1.7.9 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:3b7ff9119b386ebdc3c683a8af3c6461f424b9d80795d5e12676990b8379dd8a \
     --hash=sha256:8050c3de3e38680a7fa8de03e52bb644d0cb3d5fab38fee4343977db74ed77bc
-jinja2==3.1.5 ; python_version >= "3.10" and python_version < "3.12" \
-    --hash=sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb \
-    --hash=sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb
+jinja2==3.1.6 ; python_version >= "3.10" and python_version < "3.12" \
+    --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
+    --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
 jiter==0.5.0 ; python_version >= "3.10" and python_version < "3.12" \
     --hash=sha256:044f2f1148b5248ad2c8c3afb43430dccf676c5a5834d2f5089a4e6c5bbd64df \
     --hash=sha256:04d461ad0aebf696f8da13c99bc1b3e06f66ecf6cfd56254cc402f6385231c06 \
