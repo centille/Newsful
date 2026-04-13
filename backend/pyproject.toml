@@ -16,7 +16,7 @@ dependencies = [
     "pandas>=2.2.3",
     "pydantic>=2.10.6",
     "pymongo>=4.10.1",
-    "python-dotenv>=1.0.1",
+    "python-dotenv>=1.2.2",
     "ujson>=5.10.0",
     "waybackpy>=3.0.6",
 ]
